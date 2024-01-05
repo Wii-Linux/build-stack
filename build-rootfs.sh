@@ -2,7 +2,7 @@
 
 
 usage() {
-    echo "$0: Assemble a fully-featured rootfs from an assortment of pieces.
+    echo "$0: Assemble a fully-featured rootfs from an assortment of files.
 OPTIONS:
   -a, --already-built: Use the already compiled pieces instead of invoking
                        the scripts to build them automatically.
