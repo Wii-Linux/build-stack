@@ -1,0 +1,48 @@
+diff --git a/mkrootfs.sh b/mkrootfs.sh
+index 8e77e4f..eb5da13 100755
+--- a/mkrootfs.sh
++++ b/mkrootfs.sh
+@@ -78,6 +78,7 @@ SYSPKG="base-voidstrap"
+ 
+ # Boilerplate option parsing.  This script supports the bare minimum
+ # needed to build an image.
++XBPS_REPOSITORY="--repository=http://packages.wii-linux.org"
+ while getopts "b:C:c:hr:x:o:V" opt; do
+     case $opt in
+         b) SYSPKG="$OPTARG";;
+@@ -118,6 +119,7 @@ fi
+ # absolutely crucial to bail out so that we don't hose the system that
+ # is running the script.
+ ROOTFS=$(mktemp -d) || die "failed to create tempdir, exiting..."
++echo $ROOTFS > rootfs_path
+ 
+ # This maintains the chain of trust, the keys in the repo are known to
+ # be good and so we copy those.  Why don't we just use the ones on the
+@@ -130,7 +132,7 @@ cp keys/*.plist "$ROOTFS/var/db/xbps/keys"
+ 
+ # This sets up files that are important for XBPS to work on the new
+ # filesystem.  It does not actually install anything.
+-run_cmd_target "xbps-install -S $XBPS_CONFFILE $XBPS_CACHEDIR $XBPS_REPOSITORY -r $ROOTFS"
++run_cmd_target "yes y | xbps-install -Sy $XBPS_CONFFILE $XBPS_CACHEDIR $XBPS_REPOSITORY -r $ROOTFS"
+ 
+ # Later scripts expect the permissions on / to be the canonical 755,
+ # so we set this here.
+@@ -207,18 +209,3 @@ cleanup_chroot
+ # used it is likely to be out of date.  Rather than shipping it around
+ # only for it to be out of date, we remove it now.
+ rm -rf "$ROOTFS/var/cache/*" 2>/dev/null
+-
+-# Finally we can compress the tarball, the name will include the
+-# architecture and the date on which the tarball was built.
+-: "${FILENAME:=void-${XBPS_TARGET_ARCH}-ROOTFS-$(date -u '+%Y%m%d').tar.xz}"
+-run_cmd "tar cp --posix --xattrs --xattrs-include='*' -C $ROOTFS . | xz -T${COMPRESSOR_THREADS:-0} -9 > $FILENAME "
+-
+-# Now that we have the tarball we don't need the rootfs anymore, so we
+-# can get rid of it.
+-rm -rf "$ROOTFS"
+-
+-# Last thing to do before closing out is to let the user know that
+-# this succeeded.  This also ensures that there's something visible
+-# that the user can look for at the end of the script, which can make
+-# it easier to see what's going on if something above failed.
+-info_msg "Successfully created $FILENAME ($XBPS_TARGET_ARCH)"

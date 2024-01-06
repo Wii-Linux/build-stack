@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>public-key</key>
+	<data>LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUEyeUtmeXZTL2hXcytDaE5VaDJlSApWYlpUVHNteHJrMEpTYnFBTkcrV1FRM0JvT0dIL1VWVzZIWjgxMWlzZ1BtSjJoZlJJN1g3R3puUjcwandLc1ZLCkVRYWNxQ2pOU0NyN3h1Y3dWSFA2d2g2Tmc0VVpiaHlXT25kbjdjbzdxRkM4cThBWUhnYU9VdnZqbFlqT2xiMmgKTjBobUJYb2JsSU9DanVQZmJ6WEdlblFzSkJ6N0FUSHcvY1pwUnF5ZmxXY0VpeW82NlVvd0tHa3BsQzJ3czZtTgpHL2Z6Q242eGtqNyt5MXozMUkzWUhtQUxDNTZ4QXdpT3k5UlVqMVY3ZnRjajVnSjdKeWdodHI5WFptKzhIbWZ2Ck1YWER0dm5TZlh1MDFVSW5PSHVMK1ZWdlo0UjlDYWlTTFJzSDNJaXBvZk5zaHVQc08yZ2RjdmpYeHNKRG9pUjEKTFFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==</data>
+	<key>public-key-size</key>
+	<integer>2048</integer>
+	<key>signature-by</key>
+	<string>Techflash</string>
+	<key>signature-type</key>
+	<string>rsa</string>
+</dict>
+</plist>
