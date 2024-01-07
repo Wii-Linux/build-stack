@@ -81,13 +81,37 @@ curl -q https://wii-linux.org/latest-modules.tar.gz | zcat | tar x
 
 
 # enable networkmanager for an easy method of managing networks
-chroot "$rootfs" xbps-install -y NetworkManager dbus
+chroot "$rootfs" xbps-install -Sy NetworkManager dbus
 chroot "$rootfs" ln -s /etc/sv/dbus /etc/runit/runsvdir/default/dbus
 chroot "$rootfs" ln -s /etc/sv/NetworkManager /etc/runit/runsvdir/default/NetworkManager
 
 
 echo 'DONE!!!!  Packaging it up in a known place so we can save it.'
-tar c ./ | pigz -c9n > "$baseDir/wii-linux-rootfs-$(date '+%-m-%d-%Y__%H:%M:%S').tar.gz"
+fname="wii-linux-rootfs-$(date '+%-m-%d-%Y__%H:%M:%S').tar.gz"
+tar c ./ | pigz -c9n > "$fname"
+
+files="wii-linux-rootfs-"
+dir="/srv/www/wii-linux.org/site"
+
+num_files=$(find $dir -maxdepth 1 -name "$files"'*.tar.gz' -printf '.' | wc -m)
+if ((num_files > 3)); then
+    rm "$("ls -tr $dir/$files*.tar.gz" | tail -n +4)"
+fi
+mv "$fname" "$dir"
+
+sorted_files=$(find $dir -maxdepth 1 -name "$files"'*.tar.gz' | awk '{print $9}')
+if [[ ! -e $dir/oldold_stable.tar.gz || ! -h $dir/oldold_stable.tar.gz ]]; then
+    ln -sf "${sorted_files[1]}" $dir/oldold_stable.tar.gz
+fi
+if [[ ! -e $dir/old_stable.tar.gz || ! -h $dir/old_stable.tar.gz ]]; then
+    ln -sf "${sorted_files[2]}" $dir/old_stable.tar.gz
+fi
+if [[ ! -e $dir/latest.tar.gz || ! -h $dir/latest.tar.gz ]]; then
+    ln -sf "${sorted_files[3]}" $dir/latest.tar.gz
+fi
+
+
+
 
 # get rid of the chroot
 rm -rf "$rootfs"
