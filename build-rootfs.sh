@@ -118,11 +118,8 @@ done
 
 for ((i=0; i < ${#symlinks[@]}; i++)); do
 	idx=$(( ${#sorted_files[@]} - i - 1 ))
-	if [ $idx -lt 0 ]; then
-		idx=0
-	fi
 	
-	ln -sf "${sorted_files[$file_index]}" "$dest_dir/${symlinks[$i]}"
+	ln -sf "${sorted_files[$idx]}" "$dest_dir/${symlinks[$i]}"
 done
 
 
