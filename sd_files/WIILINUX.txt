@@ -1,0 +1,28 @@
+=== Wii Linux SD Card Files ===
+
+These files are for booting Wii Linux,
+but they are also the main FAT32 partition of your SD Card.
+
+If you are looking to modify the filesystem contents of your Wii (the rootfs),
+you are looking in the wrong place.
+These are the files necessary to begin the boot process.
+You should really not touch these unless you know what you are doing,
+or you were asked to do so by one of the developers for fixing a bug.
+
+The list of related files/folders is here.  If you were looking for a different file,
+you're probably fine to do whatever you want to it.
+Don't touch these:
+- gumboot (entire folder)
+- bootmii/armboot.elf
+- bootmii/ppcboot.elf
+
+If you were going for any of these, or anything not listed, you're fine:
+- apps
+- games
+
+
+
+Happy hacking!
+- Techflash, project leader, build stack developer
+
+

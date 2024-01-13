@@ -47,3 +47,7 @@ versioned_move() {
 	done
 	unset sorted_files symlinks idx file_base_template fname dest_dir
 }
+
+datefmt() {
+	date '+%-m-%d-%Y__%H:%M:%S'
+}
