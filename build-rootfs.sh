@@ -1,5 +1,4 @@
-#!/bin/bash
-
+#!/bin/bash -e
 
 usage() {
     echo "$0: Assemble a fully-featured rootfs from an assortment of files.
@@ -20,7 +19,7 @@ baseDir=$(pwd)
 
 
 # go parse the arguments so we know what do
-for i in $@; do
+for i in "$@"; do
     if [ "$i" = "-a" ] || [ "$i" = "--already-built" ]; then
         # probably part of CI, 
         alreadyBuilt=true
@@ -81,6 +80,7 @@ curl -q https://wii-linux.org/latest-modules.tar.gz | zcat | tar x
 
 
 # enable networkmanager for an easy method of managing networks
+echo 'nameserver 1.1.1.1' > "$rootfs/etc/resolv.conf"
 chroot "$rootfs" xbps-install -Sy NetworkManager dbus
 chroot "$rootfs" ln -s /etc/sv/dbus /etc/runit/runsvdir/default/dbus
 chroot "$rootfs" ln -s /etc/sv/NetworkManager /etc/runit/runsvdir/default/NetworkManager
@@ -88,27 +88,42 @@ chroot "$rootfs" ln -s /etc/sv/NetworkManager /etc/runit/runsvdir/default/Networ
 
 echo 'DONE!!!!  Packaging it up in a known place so we can save it.'
 fname="wii-linux-rootfs-$(date '+%-m-%d-%Y__%H:%M:%S').tar.gz"
-tar c ./ | pigz -c9n > "$fname"
+tar -c --exclude wii-linux-rootfs* ./ | pigz -c9n > "$fname"
 
-files="wii-linux-rootfs-"
-dir="/srv/www/wii-linux.org/site"
+file_base_template="wii-linux-rootfs-"
+dest_dir="/srv/www/wii-linux.org/site"
 
-num_files=$(find $dir -maxdepth 1 -name "$files"'*.tar.gz' -printf '.' | wc -m)
-if ((num_files > 3)); then
-    rm "$("ls -tr $dir/$files*.tar.gz" | tail -n +4)"
-fi
-mv "$fname" "$dir"
+# Remove existing symlinks
+symlinks=("oldold_full.tar.gz" "old_full.tar.gz" "latest_full.tar.gz")
+for f in "${symlinks[@]}"; do
+	rm -f "$dest_dir/$f"
+done
 
-sorted_files=$(find $dir -maxdepth 1 -name "$files"'*.tar.gz' | awk '{print $9}')
-if [[ ! -e $dir/oldold_stable.tar.gz || ! -h $dir/oldold_stable.tar.gz ]]; then
-    ln -sf "${sorted_files[1]}" $dir/oldold_stable.tar.gz
-fi
-if [[ ! -e $dir/old_stable.tar.gz || ! -h $dir/old_stable.tar.gz ]]; then
-    ln -sf "${sorted_files[2]}" $dir/old_stable.tar.gz
-fi
-if [[ ! -e $dir/latest.tar.gz || ! -h $dir/latest.tar.gz ]]; then
-    ln -sf "${sorted_files[3]}" $dir/latest.tar.gz
-fi
+# Move the new file to the destination directory
+mv "$fname" "$dest_dir"
+
+# Sort files by their timestamp in their name
+sorted_files=( $(find $dest_dir -name "$file_base_template"\* | sort) )
+echo "sorted_files = ${sorted_files[*]}"
+
+# If there are more than 3 files, remove the oldest ones
+echo "num_sorted_files = ${#sorted_files[@]}"
+while [ ${#sorted_files[@]} -gt 3 ]; do
+	if [ "${sorted_files[0]}" != "" ]; then
+		echo "remove ${sorted_files[0]}"
+		rm "${sorted_files[0]}"
+	fi
+	sorted_files=("${sorted_files[@]:1}")
+done
+
+for ((i=0; i < ${#symlinks[@]}; i++)); do
+	idx=$(( ${#sorted_files[@]} - i - 1 ))
+	if [ $idx -lt 0 ]; then
+		idx=0
+	fi
+	
+	ln -sf "${sorted_files[$file_index]}" "$dest_dir/${symlinks[$i]}"
+done
 
 
 
