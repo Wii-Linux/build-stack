@@ -87,12 +87,12 @@ chroot "$rootfs" ln -s /etc/sv/NetworkManager /etc/runit/runsvdir/default/Networ
 
 
 echo 'DONE!!!!  Packaging it up in a known place so we can save it.'
-fname="wii-linux-rootfs-$(date '+%-m-%d-%Y__%H:%M:%S').tar.gz"
-tar -c --exclude wii-linux-rootfs* ./ | pigz -c9n > "$fname"
+fname="wii-linux-rootfs-$(date '+%-m-%d-%Y__%H:%M:%S').tar.xz"
+tar -c --exclude wii-linux-rootfs* ./ | xz -T"$(nproc)" -9 > "$fname"
 
 file_base_template="wii-linux-rootfs-"
 dest_dir="/srv/www/wii-linux.org/site"
-symlinks=("oldold_full.tar.gz" "old_full.tar.gz" "latest_full.tar.gz")
+symlinks=("oldold_full.tar.xz" "old_full.tar.xz" "latest_full.tar.xz")
 
 versioned_move
 
