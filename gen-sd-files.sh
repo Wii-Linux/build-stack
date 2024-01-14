@@ -14,9 +14,9 @@ wget https://wii-linux.org/latest-kernel.elf -O gumboot/zImage.ngx
 
 
 file_base_template="wii-linux-sd-files-"
-fname="${file_base_template}$(datefmt).zip"
+fname="${file_base_template}$(datefmt).tar.gz"
 
-tar c --exclude $file_base_template* ./ > "$fname"
+tar c --exclude $file_base_template* ./ | pigz -c9n > "$fname"
 dest_dir="/srv/www/wii-linux.org/site"
 symlinks=("oldold_sd_files.tar.gz" "old_sd_files.tar.gz" "latest_sd_files.tar.gz")
 
