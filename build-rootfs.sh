@@ -76,7 +76,7 @@ curl -q https://wii-linux.org/openfwwf-5.2-bin.tar.gz | zcat | tar x
 curl https://wii-linux.org/latest-configs.tar.gz | zcat | tar x
 
 # download & extract the kernel modules
-curl -q https://wii-linux.org/latest-modules.tar.gz | zcat | tar x
+curl -q https://wii-linux.org/latest_modules.tar.gz | zcat | tar x
 
 
 # enable networkmanager for an easy method of managing networks
