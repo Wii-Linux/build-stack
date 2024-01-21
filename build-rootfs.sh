@@ -81,9 +81,11 @@ curl -q https://wii-linux.org/latest_modules.tar.gz | zcat | tar x
 
 # enable networkmanager for an easy method of managing networks
 echo 'nameserver 1.1.1.1' > "$rootfs/etc/resolv.conf"
-chroot "$rootfs" xbps-install -Sy NetworkManager dbus
+# install some essentials and some nice-to-haves
+chroot "$rootfs" xbps-install -Sy NetworkManager dbus bluez usbutils
 chroot "$rootfs" ln -s /etc/sv/dbus /etc/runit/runsvdir/default/dbus
 chroot "$rootfs" ln -s /etc/sv/NetworkManager /etc/runit/runsvdir/default/NetworkManager
+chroot "$rootfs" ln -s /etc/sv/bluetoothd /etc/runit/runsvdir/default/bluetoothd
 
 
 echo 'DONE!!!!  Packaging it up in a known place so we can save it.'
