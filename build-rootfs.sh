@@ -63,7 +63,7 @@ echo
 echo "rootfs dir is $rootfs"
 echo
 echo
-cd "$rootfs" || fatal "failed to cd to rootfs"
+pushd "$rootfs" || fatal "failed to cd to rootfs"
 
 # NOTE: This doesn't use any bandwidth when running on the wii-linux.org server!
 # Since wii-linux.org has a public IP directly, it doesn't ever leave the local
@@ -90,7 +90,8 @@ chroot "$rootfs" ln -s /etc/sv/bluetoothd /etc/runit/runsvdir/default/bluetoothd
 
 echo 'DONE!!!!  Packaging it up in a known place so we can save it.'
 fname="wii-linux-rootfs-$(date '+%-m-%d-%Y__%H:%M:%S').tar.xz"
-tar -c --exclude wii-linux-rootfs* ./ | xz -T"$(nproc)" -9 > "$fname"
+popd
+tar -c "$rootfs" | xz -T"$(nproc)" -9 > "$fname"
 
 file_base_template="wii-linux-rootfs-"
 dest_dir="/srv/www/wii-linux.org/site"
