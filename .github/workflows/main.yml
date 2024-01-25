@@ -26,3 +26,6 @@ jobs:
 
    - name: Git pull on server
      run: ssh root@wii-linux.org  'cd /wii-linux-tools/build-stack; git pull'
+
+   - name: Rebuild
+     run: ssh root@wii-linux.org  'cd /wii-linux-tools/build-stack; ./build-rootfs.sh'
