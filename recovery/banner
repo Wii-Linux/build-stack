@@ -1,0 +1,11 @@
+#!/bin/sh
+echo -e '\x1b[1;31m=== YOU ARE IN RECOVERY MODE ===
+\e[1;33mThe most likely cause of this is you force powered off
+the console before the boot process was completed.\e[0m
+It could have also been caused by a faulty update,
+typically one regarding the kernel, or any other reason
+that would cause the system to fail to boot. 
+
+Please chose one of the below options to continue.
+\e[0m\e[32m[C]\e[0montinue Normal Boot
+Get a \e[1;33m[S]\e[0mhell to examine the situation manually'

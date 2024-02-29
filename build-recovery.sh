@@ -4,21 +4,22 @@
 
 # enable networkmanager for an easy method of managing networks
 echo 'nameserver 1.1.1.1' > "$rootfs/etc/resolv.conf"
-# install some essentials and some nice-to-haves
-chroot "$rootfs" xbps-install -Sy NetworkManager dbus bluez usbutils psmisc
+chroot "$rootfs" xbps-install -Sy NetworkManager dbus usbutils psmisc
 chroot "$rootfs" ln -s /etc/sv/dbus /etc/runit/runsvdir/default/dbus
 chroot "$rootfs" ln -s /etc/sv/NetworkManager /etc/runit/runsvdir/default/NetworkManager
-chroot "$rootfs" ln -s /etc/sv/bluetoothd /etc/runit/runsvdir/default/bluetoothd
+bash "$baseDir/recovery/banner" > "$rootfs/etc/issue"
+chown root:root "$rootfs/etc/issue"
 
-
+# copy rootfs to a disk image
+dd if=/dev/zero of=/tmp/wii_linux_recovery.img
 echo 'DONE!!!!  Packaging it up in a known place so we can save it.'
-fname="wii-linux-rootfs-$(date '+%-m-%d-%Y__%H:%M:%S').tar.xz"
+fname="wii-linux-recovery_root-$(date '+%-m-%d-%Y__%H:%M:%S').tar.xz"
 popd
 tar -c "$rootfs" | xz -T"$(nproc)" -9 > "$fname"
 
-file_base_template="wii-linux-rootfs-"
+file_base_template="wii-linux-recovery_root-"
 dest_dir="/srv/www/wii-linux.org/site"
-symlinks=("oldold_full.tar.xz" "old_full.tar.xz" "latest_full.tar.xz")
+symlinks=("oldold_recovery.tar.xz" "old_recovery.tar.xz" "latest_recovery.tar.xz")
 
 versioned_move
 

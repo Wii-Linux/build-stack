@@ -15,6 +15,7 @@ Don't touch these:
 - gumboot (entire folder)
 - bootmii/armboot.elf
 - bootmii/ppcboot.elf
+- wii-linux/recovery.img
 
 If you were going for any of these, or anything not listed, you're fine:
 - apps
