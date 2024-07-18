@@ -10,6 +10,7 @@ This script heavily assumes a specific file structure is already set up.
 I highly recommend creating a dedicated Wii Linux folder, and cloning at least:
 - build-stack
 - boot-stack
+- kernel of your choice
 
 and generating these ahead of time:
 - initrd-src
@@ -22,9 +23,12 @@ EOF
 }
 
 
-if [ "$1" = "" ] || [ "$2" = "" ]; then
-	usage
-fi
+case "$1" in
+	"") usage; exit 1 ;; # user didn't provide anything
+	-h|--help) usage; exit 0 ;; # show help
+esac
+
+if [ "$2" = "" ]; then usage; exit 1; fi
 
 # don't bother cding to it if we're already there
 if [ "$(basename "$PWD")" != "$1" ]; then
@@ -48,19 +52,18 @@ make wii_smaller_defconfig
 make -j8
 sudo sh -c 'source ../build-stack/kernel-env.sh; make INSTALL_MOD_PATH=../loader-img-src/usr/ modules_install'
 
-# TODO: cleanup
-cp ../boot-stack/internal-loader/init.sh ../initrd-src/linuxrc
-cp ../boot-stack/internal-loader/support.sh ../initrd-src/
-cp ../boot-stack/internal-loader/logging.sh ../initrd-src/
-cd ../initrd-src || exit 1
+# rebuild the internal initramfs
+cd ../initrd-src || fatal "initrd-src does not exist!"
+cp ../boot-stack/internal-loader/init.sh    ./linuxrc
+cp ../boot-stack/internal-loader/support.sh ./
+cp ../boot-stack/internal-loader/logging.sh ./
 find . -print0 | cpio --null --create --verbose --format=newc > ../initrd.cpio
-cd ../ || exit 1
-rm initrd.cpio.lz4
-lz4 -l initrd.cpio
-rm initrd.cpio
+cd ../ || fatal "can't cd back?  wtf?"
+# legacy compression, force overwrite if exists, delete source file
+lz4 -lf --rm initrd.cpio initrd.cpio.lz4
 
 # build the real deal kernel and modules
-cd "$1" || exit 1
+cd "$1" || fatal "kernel directory disappeared"
 make wii_defconfig
 make -j8
 
