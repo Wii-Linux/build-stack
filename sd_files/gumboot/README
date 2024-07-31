@@ -1,0 +1,7 @@
+This folder contains binaries of:
+- Gumboot (gumboot.elf)
+- neagix's fork of MINI, for Gumboot (armboot.bin)
+- BootMii (gui.elf)
+
+All of these are licensed under the GNU General Public License, Version 2.
+The license text may be found in the LICENSE file of this folder.

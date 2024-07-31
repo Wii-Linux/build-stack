@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<app version="1">
+	<name>Linux {{fullver}}</name>
+	<version>{{fullver}}</version>
+	<release_date></release_date>
+	<coder>Techflash</coder>
+	<short_description>Wii Linux {{fullver}} - IOS verion</short_description>
+	<long_description>A port of Linux {{fullver}} to the Nintendo Wii.
+In contrast to the standard version that launches via Gumboot, which replaces BootMii, this version launches via the Homebrew Channel, or your preferred method of launching standard Wii homebrew.
+This version uses the standard "IOS" firmware for the Starlet, rather than MINI &amp; Gumboot.
+This unfortunately means that there's less hardware support, though, so be aware of the following items that you lose with this version:
+- USB 2.0 access (could be added, but isn't yet).
+- DVD access (same as above)
+- A little bit of RAM
+- Probably more that I'm forgetting as of writing
+</long_description>
+<ahb_access/>
+</app>
