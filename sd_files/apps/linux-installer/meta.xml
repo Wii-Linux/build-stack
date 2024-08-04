@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <app version="1">
-	<name>Wii Linux Installer</name>
-	<version>v0.0.1</version>
+	<name>Wii Linux Installer - Early Alpha</name>
+	<version>v0.0.1-alpha</version>
 	<release_date></release_date>
 	<coder>Techflash</coder>
-	<short_description>Wii Linux Installer</short_description>
+	<short_description>Wii Linux Installer - Early Alpha</short_description>
 	<long_description>An application that downloads and installs Wii Linux for you.
 You'll need the following:
 - USB Keyboard

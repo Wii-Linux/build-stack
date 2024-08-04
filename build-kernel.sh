@@ -18,6 +18,9 @@ Options:
                                 source your own before running the script if
                                 you plan to use this!
 
+       --installer:             Build targetting the Wii Linux Installer.
+                                Implies --ios and --wii.
+
   Compression Options:
        Note that none of these actually affect the kernel config.  You'll need
        to modify it manually if you plan to use anything other than lz4.
@@ -52,6 +55,7 @@ I highly recommend creating a dedicated Wii Linux folder, and cloning at least:
 and generating these ahead of time:
 - initrd-src
 - loader-img-src
+- installer-src
 
 All of these must be present in the parent directory of your kernel source.
 
@@ -82,6 +86,8 @@ fi
 con="wii"
 wii_bl="mini"
 compression="lz4"
+is_installer="false"
+ldr_dir="loader-img-src"
 make_args="-j$(nproc)"
 
 for arg in "$@"; do
@@ -102,6 +108,9 @@ for arg in "$@"; do
 			checkValid "$con"        "gamecube" "a Wii bootloader on a GameCube"
 			checkValid "$tmp_got_bl" true       "2 bootloaders"
 			wii_bl="mini"; tmp_got_bl=true ;;
+		--installer)
+			checkValid "$con"        "gamecube" "the installer on a GameCube"
+			is_installer=true ;;
 		--lz4|--compress=lz4)
 			checkValid "$tmp_got_comp" true "2 compression methods"
 			compression="lz4"; tmp_got_comp=true ;;
@@ -119,7 +128,7 @@ for arg in "$@"; do
 	esac
 done
 
-if [ "$#" -gt "7" ] || [ "$#" -lt "3" ]; then
+if [ "$#" -gt "8" ] || [ "$#" -lt "3" ]; then
 	error "bad number of arguments"
 	usage; exit 1
 fi
@@ -129,6 +138,11 @@ s_ver="$3"
 echo "Building for console: $con"
 if [ "$con" = "wii" ]; then
 	echo "Building for bootloader: $wii_bl"
+	echo "Building installer: $is_installer"
+
+	if [ "$is_installer" = "true" ]; then
+		ldr_dir="installer-src"
+	fi
 	if [ "$wii_bl" != "mini" ]; then
 		target="${target}_${wii_bl}"
 	fi
@@ -141,22 +155,26 @@ if [ "$(basename "$PWD")" != "$1" ]; then
 fi
 
 # clean up any old builds
-rm -rf ../initrd-src/lib/modules/* ../loader-img-src/lib/modules/*
+rm -rf ../initrd-src/lib/modules/* ../$ldr_dir/lib/modules/*
 
 if [ "$no_source_env" != "true" ]; then
 	# make sure we have the env, unless the user doesn't want it
 	. ../build-stack/kernel-env.sh
 fi
 
-# build the kernel modules for the internal initramfs
-make ${target}_ultratiny_defconfig
-make "$make_args"
-make INSTALL_MOD_PATH=../initrd-src/usr/ modules_install
+if [ "$is_installer" != "true" ]; then
+	# build the kernel modules for the internal initramfs
+	make ${target}_ultratiny_defconfig
+	make "$make_args"
+	make INSTALL_MOD_PATH=../initrd-src/usr/ modules_install
 
-# build the kernel modules for the loader
-make ${target}_smaller_defconfig
-make "$make_args"
-make INSTALL_MOD_PATH=../loader-img-src/usr/ modules_install
+	# build the kernel modules for the loader
+	make ${target}_smaller_defconfig
+	make "$make_args"
+	if [ "$is_installer" != "true" ]; then
+		make INSTALL_MOD_PATH=../$ldr_dir/usr/ modules_install
+	fi
+fi
 
 
 # rebuild the internal initramfs
@@ -167,11 +185,13 @@ if [ -d "$tmp" ]; then cd "$tmp"
 else fatal "$tmp doesn't exist"; fi
 
 if ! [ -d "$tmp2" ]; then fatal "$tmp2 does not exist!"; fi
+
 cp init.sh               "$tmp2/linuxrc"
 cp support.sh logging.sh "$tmp2/"
 
 cd "$tmp2"
 find . -print0 | cpio --null --create --verbose --format=newc > ../initrd.cpio
+
 cd ../ || fatal "can't cd back?  wtf?"
 if [ "$compression" = "lz4" ]; then
 	# legacy compression, force overwrite if exists, delete source file
@@ -188,13 +208,13 @@ cd "$1" || fatal "kernel directory disappeared"
 make ${target}_defconfig
 make "$make_args"
 
-tmp="$(mktemp -d wii_linux_kernel_build_XXXXXXXXXX --tmpdir=/tmp)"
-if [ "$tmp" = "" ]; then fatal "mktemp didn't give valid output"; fi
-mkdir -p "$tmp/usr/lib/modules"
-make INSTALL_MOD_PATH="$tmp/usr" modules_install
-
-tar czf "./modules-$s_ver-$(datefmt).tar.gz" --numeric-owner --owner=0 -C "$tmp" .
-
+if [ "$is_installer" != "true" ]; then
+	tmp="$(mktemp -d wii_linux_kernel_build_XXXXXXXXXX --tmpdir=/tmp)"
+	if [ "$tmp" = "" ]; then fatal "mktemp didn't give valid output"; fi
+	mkdir -p "$tmp/usr/lib/modules"
+	make INSTALL_MOD_PATH="$tmp/usr" modules_install
+	tar czf "./modules-$s_ver-$(datefmt).tar.gz" --numeric-owner --owner=0 -C "$tmp" .
+fi
 
 
 
