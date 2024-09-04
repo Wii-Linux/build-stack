@@ -52,28 +52,34 @@ out="$PWD/$1"
 if [ -d build-stack ]; then cd build-stack
 elif [ -d ../build-stack ]; then cd ../build-stack
 else fatal "can't find build-stack"; fi
+cd ..
+
+base=$PWD
+cd "$base/build-stack"
 
 if [ "$is_installer" != "true" ]; then
 	./c.sh
 fi
 
-if [ -d ../boot-stack/loader-img-full ]; then cd ../boot-stack/loader-img-full
+if [ -d "$base/boot-stack/loader-img-full" ]; then cd "$base/boot-stack/loader-img-full"
 else fatal "can't find boot-stack/loader-img-full"; fi
 
-tmp="../../$dir"
+tmp="$base/$dir"
 if ! [ -d "$tmp" ]; then fatal "can't find $tmp"; fi
 
 if [ "$is_installer" = "true" ]; then
-	cd ../installer || fatal "can't cd to ../installer"
-else
-	fatal "balls"
+	cd "$base/boot-stack/installer" || fatal "can't cd to $base/boot-stack/installer"
 fi
 
 cp support.sh checkBdev.sh network.sh util.sh logging.sh jit_setup.sh "$tmp/"
 cp init.sh "$tmp/linuxrc"
 
 if [ "$is_installer" = "true" ]; then
-	( cd "$tmp"; ../build-stack/util_installer.sh .; )
+	cd "$base/installer"
+	cp src/stage1.sh "$tmp/usr/bin/wiilinux-installer"
+
+	cd "$tmp"
+	../build-stack/util_installer.sh .
 
 	tar --no-recursion -cf "$out" -C "$tmp" -T "$tmp/file_list.txt"
 
