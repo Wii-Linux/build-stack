@@ -75,9 +75,9 @@ checkValid() {
 		usage; exit 1
 	fi
 }
-if [ -f ./utils.sh ]; then . ./utils.sh; cd ../; BASE="$PWD"; cd -
+if [ -f ./utils.sh ]; then . ./utils.sh; cd ../; BASE="$PWD"; cd - > /dev/null
 elif [ -f ./build-stack/utils.sh ]; then . ./build-stack/utils.sh; BASE="$PWD"
-elif [ -f ../build-stack/utils.sh ]; then . ../build-stack/utils.sh; cd ../; BASE="$PWD" cd -
+elif [ -f ../build-stack/utils.sh ]; then . ../build-stack/utils.sh; cd ../; BASE="$PWD"; cd - > /dev/null
 else
 	echo "failed to find utils.sh" >&2
 	exit 1
@@ -88,7 +88,7 @@ con="wii"
 wii_bl="mini"
 compression="lz4"
 is_installer="false"
-ldr_dir="loader-img-src"
+ldr_dir="$BASE/loader-img-src"
 make_args="-j$(nproc)"
 
 for arg in "$@"; do
@@ -149,6 +149,7 @@ if [ "$con" = "wii" ]; then
 	fi
 fi
 echo "defconfig target: $target"
+echo "base dir: $BASE"
 
 # don't bother cding to it if we're already there
 if ! [ -d "$BASE/$1" ]; then
