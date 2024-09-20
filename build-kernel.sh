@@ -11,7 +11,8 @@ Options:
 
        -g,--gamecube:           Builds a kernel for the Nintendo GameCube.
 
-       -j1:                     Force -j1 mode in make
+       -j1:                     Force -j1 mode in make - useful if the build
+                                is failing for whatever reason.
 
        --no-source-env:         Disable sourcing the default kernel build
                                 environment variables.  Ensure that you
