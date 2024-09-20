@@ -74,9 +74,9 @@ checkValid() {
 		usage; exit 1
 	fi
 }
-if [ -f ./utils.sh ]; then . ./utils.sh
-elif [ -f ./build-stack/utils.sh ]; then . ./build-stack/utils.sh
-elif [ -f ../build-stack/utils.sh ]; then . ../build-stack/utils.sh
+if [ -f ./utils.sh ]; then . ./utils.sh; cd ../; BASE="$PWD"; cd -
+elif [ -f ./build-stack/utils.sh ]; then . ./build-stack/utils.sh; BASE="$PWD"
+elif [ -f ../build-stack/utils.sh ]; then . ../build-stack/utils.sh; cd ../; BASE="$PWD" cd -
 else
 	echo "failed to find utils.sh" >&2
 	exit 1
@@ -141,7 +141,7 @@ if [ "$con" = "wii" ]; then
 	echo "Building installer: $is_installer"
 
 	if [ "$is_installer" = "true" ]; then
-		ldr_dir="installer-src"
+		ldr_dir="$BASE/installer-src"
 	fi
 	if [ "$wii_bl" != "mini" ]; then
 		target="${target}_${wii_bl}"
@@ -150,49 +150,52 @@ fi
 echo "defconfig target: $target"
 
 # don't bother cding to it if we're already there
-if [ "$(basename "$PWD")" != "$1" ]; then
-	cd "$1" || { fatal "specified kernel source does not exist"; usage; }
+if ! [ -d "$BASE/$1" ]; then
+	fatal "specified kernel source does not exist"
+	usage
 fi
 
+cd "$BASE/$1"
+
 # clean up any old builds
-rm -rf ../initrd-src/lib/modules/* ../$ldr_dir/lib/modules/*
+rm -rf "$BASE/initrd-src/lib/modules/"* "$ldr_dir/lib/modules/"*
 
 if [ "$no_source_env" != "true" ]; then
 	# make sure we have the env, unless the user doesn't want it
-	. ../build-stack/kernel-env.sh
+	. "$BASE/build-stack/kernel-env.sh"
 fi
 
 if [ "$is_installer" != "true" ]; then
 	# build the kernel modules for the internal initramfs
 	make ${target}_ultratiny_defconfig
 	make "$make_args"
-	make INSTALL_MOD_PATH=../initrd-src/usr/ modules_install
+	make INSTALL_MOD_PATH="$BASE/initrd-src/usr/" modules_install
 
 	# build the kernel modules for the loader
 	make ${target}_smaller_defconfig
 	make "$make_args"
 	if [ "$is_installer" != "true" ]; then
-		make INSTALL_MOD_PATH=../$ldr_dir/usr/ modules_install
+		make INSTALL_MOD_PATH="$ldr_dir/usr/" modules_install
 	fi
 fi
 
 
 # rebuild the internal initramfs
-tmp="../boot-stack/internal-loader"
-tmp2="../../initrd-src"
+ldr="$BASE/boot-stack/internal-loader"
+dest="$BASE/initrd-src"
 
-if [ -d "$tmp" ]; then cd "$tmp"
-else fatal "$tmp doesn't exist"; fi
+if [ -d "$ldr" ]; then cd "$ldr"
+else fatal "$ldr doesn't exist"; fi
 
-if ! [ -d "$tmp2" ]; then fatal "$tmp2 does not exist!"; fi
+if ! [ -d "$dest" ]; then fatal "$(basename $dest) does not exist!"; fi
 
-cp init.sh               "$tmp2/linuxrc"
-cp support.sh logging.sh "$tmp2/"
+cp init.sh               "$dest/linuxrc"
+cp support.sh logging.sh "$dest/"
 
-cd "$tmp2"
-find . -print0 | cpio --null --create --verbose --format=newc > ../initrd.cpio
+cd "$dest"
+find . -print0 | cpio --null --create --verbose --format=newc > "$BASE/initrd.cpio"
 
-cd ../ || fatal "can't cd back?  wtf?"
+cd "$BASE" || fatal "can't cd back?  wtf?"
 if [ "$compression" = "lz4" ]; then
 	# legacy compression, force overwrite if exists, delete source file
 	lz4 -lf --rm initrd.cpio initrd.cpio.lz4
@@ -204,7 +207,7 @@ elif [ "$compression" = "none" ]; then
 fi
 
 # build the real deal kernel and modules
-cd "$1" || fatal "kernel directory disappeared"
+cd "$BASE/$1" || fatal "kernel directory disappeared"
 make ${target}_defconfig
 make "$make_args"
 
