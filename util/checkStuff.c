@@ -5,6 +5,8 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <stdint.h>
+#include <ctype.h>
+#include <errno.h>
 
 #define ERR   "\e[1;31m"
 #define GOOD  "\e[1;32m"
@@ -92,6 +94,9 @@ static bool progInPath(char *execName) {
 }
 
 static void promptForDownload(char *base, char *name, int retOnErr) {
+	char answer[32];
+	memset(answer, 0, sizeof(answer));
+startDl:
 	puts("This program can " GOOD "automatically download" RESET " this source code for you!");
 	if (!hasGit) {
 		puts(WARN "Missing git executable, unable to download." RESET);
@@ -99,7 +104,44 @@ static void promptForDownload(char *base, char *name, int retOnErr) {
 		exit(retOnErr);
 	}
 	printf("Would you like to download " ITEM "%s" RESET " using git? [Y/n] ", name);
-	exit(retOnErr);
+	fgets(answer, sizeof(answer), stdin);
+
+	// convert to lowercase and strip the newline
+	for (int i = 0; i != strlen(answer); i++) {
+		answer[i] = tolower(answer[i]);
+		if (answer[i] == '\r' || answer[i] == '\n') {
+			answer[i] = '\0';
+			break;
+		}
+	}
+
+	if (strcmp(answer, "yes") == 0 || strcmp(answer, "y") == 0 || answer[0] == '\0') {
+		char cmd[128] = "git clone https://github.com/Wii-Linux/";
+
+		if (chdir(base) != 0) {
+			fprintf(stderr, ERR "chdir(\"%s\") failed: %s\r\n" RESET, base, strerror(errno));
+			exit(1);
+		}
+		strcat(cmd, name);
+		if (system(cmd) != 0) {
+			printf(ERR "An error has occurred while attempting to download" ITEM "%s" ERR "!\r\n" RESET
+					"Please check your internet connection and try again.\r\n");
+			exit(1);
+		}
+	}
+	else if (strcmp(answer, "no") == 0 || strcmp(answer, "n") == 0) {
+		printf(WARN "Offer to download denied, however, source " ITEM "%s" WARN " does not exist, but is required.\r\n"
+				ERR "Exiting...\r\n" RESET,
+				name
+		);
+		exit(retOnErr);
+	}
+	else {
+		printf(ERR "Invalid answer \"%s\"!\r\n" RESET, answer);
+		// reset the state
+		memset(answer, 0, sizeof(answer));
+		goto startDl;
+	}
 }
 
 
