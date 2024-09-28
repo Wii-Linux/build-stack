@@ -21,6 +21,7 @@ typedef enum {
 	REQ_NONE
 } req_t;
 
+#define FLAG_NONE		0x00
 #define FLAG_ALLOW_DOWNLOAD	0x01
 #define FLAG_GENERATE		0x02
 #define FLAG_SETVAR		0x04
@@ -51,7 +52,7 @@ static bool dirExists(char *dir) {
 
 
 
-static bool progInPath(char *execName) {
+static bool progInPath(const char *execName) {
 	// get the PATH
 	char *path_orig = getenv("PATH");
 	if (path_orig == NULL) {
@@ -93,7 +94,7 @@ static bool progInPath(char *execName) {
     return false;
 }
 
-static void promptForDownload(char *base, char *name, int retOnErr) {
+static void promptForDownload(char *base, const char *name, int retOnErr) {
 	char answer[32];
 	memset(answer, 0, sizeof(answer));
 startDl:
@@ -107,7 +108,7 @@ startDl:
 	fgets(answer, sizeof(answer), stdin);
 
 	// convert to lowercase and strip the newline
-	for (int i = 0; i != strlen(answer); i++) {
+	for (unsigned int i = 0; i != strlen(answer); i++) {
 		answer[i] = tolower(answer[i]);
 		if (answer[i] == '\r' || answer[i] == '\n') {
 			answer[i] = '\0';
@@ -125,7 +126,7 @@ startDl:
 		strcat(cmd, name);
 		if (system(cmd) != 0) {
 			printf(ERR "An error has occurred while attempting to download" ITEM "%s" ERR "!\r\n" RESET
-					"Please check your internet connection and try again.\r\n");
+					"Please check your internet connection and try again.\r\n", cmd);
 			exit(1);
 		}
 	}
@@ -146,33 +147,35 @@ startDl:
 
 
 
-static item_t programs[] = {
-	{ "gcc", "Host system compiler" },
-	{ "as", "Host system assembler" },
-	{ "ld", "Host system linker" },
-	{ "make", "Host system make" },
+static const item_t programs[] = {
+	{ "gcc", "Host system compiler", "", REQ_HARD, FLAG_NONE, NULL },
+	{ "as", "Host system assembler", "", REQ_HARD, FLAG_NONE, NULL },
+	{ "ld", "Host system linker", "", REQ_HARD, FLAG_NONE, NULL },
+	{ "make", "Host system make", "", REQ_HARD, FLAG_NONE, NULL },
 	{ "git", "Host system git", "The auto-download feature won't work properly if you're missing any code!", REQ_WARN, FLAG_SETVAR, &hasGit },
-	{ "bc", "Basic calculator, needed by Linux kernel", "You won't be able to compile the kernel", REQ_WARN },
-	{ "powerpc-unknown-linux-gnu-gcc", "PowerPC Cross-Toolchain compiler" },
-	{ "powerpc-unknown-linux-gnu-ld", "PowerPC Cross-Toolchain linker" },
-	{ "powerpc-unknown-linux-gnu-as", "PowerPC Cross-Toolchain assembler" },
-	{ }
+	{ "bc", "Basic calculator, needed by Linux kernel", "You won't be able to compile the kernel", REQ_WARN, FLAG_NONE, NULL },
+	{ "powerpc-unknown-linux-gnu-gcc", "PowerPC Cross-Toolchain compiler", "", REQ_HARD, FLAG_NONE, NULL },
+	{ "powerpc-unknown-linux-gnu-ld", "PowerPC Cross-Toolchain linker", "", REQ_HARD, FLAG_NONE, NULL },
+	{ "powerpc-unknown-linux-gnu-as", "PowerPC Cross-Toolchain assembler", "", REQ_HARD, FLAG_NONE, NULL },
+	{ "", "", "", REQ_HARD, FLAG_NONE, NULL }
 };
 
 
-static item_t directories[] = {
+static const item_t directories[] = {
 	{ "buildroot", "Wii Linux buildroot fork",
-		"You won't be able to build the loader(s) unless you have a pre-generated copy of initrd-src and loader-img-src", REQ_WARN, FLAG_ALLOW_DOWNLOAD },
-	{ "boot-stack", "Wii Linux boot stack (custom init scripts and boot menu)", "You won't be able to build the loader(s)", REQ_WARN, FLAG_ALLOW_DOWNLOAD },
-	{ "build-stack", "Wii Linux build stack", "", REQ_HARD, FLAG_ALLOW_DOWNLOAD },
-	{ "installer", "Wii Linux installer source code", "You won't be able to build the installer", REQ_WARN, FLAG_ALLOW_DOWNLOAD },
-	{ "initrd-src", "Built sources for the internal loader", "", REQ_NONE, FLAG_GENERATE },
-	{ "loader-img-src", "Built sources for the boot menu / loader.img", REQ_NONE, FLAG_GENERATE },
-	{ }
+		"You won't be able to build the loader(s) unless you have a pre-generated copy of initrd-src and loader-img-src", REQ_WARN, FLAG_ALLOW_DOWNLOAD, NULL },
+	{ "boot-stack", "Wii Linux boot stack (custom init scripts and boot menu)", "You won't be able to build the loader(s)", REQ_WARN, FLAG_ALLOW_DOWNLOAD, NULL },
+	{ "build-stack", "Wii Linux build stack", "", REQ_HARD, FLAG_ALLOW_DOWNLOAD, NULL },
+	{ "installer", "Wii Linux installer source code", "You won't be able to build the installer", REQ_WARN, FLAG_ALLOW_DOWNLOAD, NULL },
+	{ "initrd-src", "Built sources for the internal loader", "", REQ_NONE, FLAG_GENERATE, NULL },
+	{ "loader-img-src", "Built sources for the boot menu / loader.img", "", REQ_NONE, FLAG_GENERATE, NULL },
+	{ "", "", "", REQ_HARD, FLAG_NONE, NULL }
 };
 
 int main(int argc, char *argv[], char *envp[]) {
 	int i = 0;
+	(void)argc;
+	(void)envp;
 
 	char *base = argv[1];
 	printf(STEP "Now checking your host system for software compatibility...\r\n" RESET);
@@ -226,7 +229,15 @@ int main(int argc, char *argv[], char *envp[]) {
 		else {
 			puts(ERR "FAIL" RESET);
 			printf(ERR "FAILED" RESET " to find the source directory " ITEM "%s" RESET "!\r\n", directories[i].name);
-			promptForDownload(base, directories[i].name, RET_NO_SRC);
+			if (directories[i].flags & FLAG_ALLOW_DOWNLOAD) {
+				promptForDownload(base, directories[i].name, RET_NO_SRC);
+			}
+			else if (directories[i].flags & FLAG_GENERATE) {
+				// TODO
+			}
+			else {
+				return RET_NO_SRC;
+			}
 		}
 		i++;
 	}

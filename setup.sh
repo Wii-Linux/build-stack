@@ -40,7 +40,7 @@ esac
 
 cd "$BASE/build-stack"
 
-if ! gcc -o util/doCheck util/checkStuff.c; then
+if ! gcc -Wall -Wextra -g -o util/doCheck util/checkStuff.c; then
 	fatal "Failed to compile checkStuff.c"
 fi
 
