@@ -40,17 +40,45 @@ typedef struct {
 	bool *	toSet;
 } item_t;
 
-
 // keep track of whether or not the user has git
 static bool hasGit = false;
 
 
-static bool dirExists(char *dir) {
+static bool dirExists(const char *dir) {
 	struct stat sb;
 	return (stat(dir, &sb) == 0 && S_ISDIR(sb.st_mode));
 }
 
 
+static bool confirmation(const char *prompt) {
+	char answer[32];
+startConfirm:
+	printf("%s", prompt);
+	fgets(answer, sizeof(answer), stdin);
+
+	// convert to lowercase and strip the newline
+	for (unsigned int i = 0; i != strlen(answer); i++) {
+		answer[i] = tolower(answer[i]);
+		if (answer[i] == '\r' || answer[i] == '\n') {
+			answer[i] = '\0';
+			break;
+		}
+	}
+
+	if (strcmp(answer, "yes") == 0 || strcmp(answer, "y") == 0 || answer[0] == '\0') {
+		return true;
+	}
+
+
+	else if (strcmp(answer, "no") == 0 || strcmp(answer, "n") == 0) {
+		return false;
+	}
+
+	else {
+		printf(ERR "Invalid answer " ITEM "\"%s\"" RESET "!\r\n", answer);
+		goto startConfirm;
+	}
+}
 
 static bool progInPath(const char *execName) {
 	// get the PATH
@@ -95,53 +123,35 @@ static bool progInPath(const char *execName) {
 }
 
 static void promptForDownload(char *base, const char *name, int retOnErr) {
-	char answer[32];
-	memset(answer, 0, sizeof(answer));
-startDl:
+	char confText[128];
 	puts("This program can " GOOD "automatically download" RESET " this source code for you!");
+
 	if (!hasGit) {
 		puts(WARN "Missing git executable, unable to download." RESET);
 		puts("Install git, or download the source yourself!");
 		exit(retOnErr);
 	}
-	printf("Would you like to download " ITEM "%s" RESET " using git? [Y/n] ", name);
-	fgets(answer, sizeof(answer), stdin);
+	snprintf(confText, sizeof(confText), "Would you like to download " ITEM "%s" RESET " using git? [Y/n] ", name);
 
-	// convert to lowercase and strip the newline
-	for (unsigned int i = 0; i != strlen(answer); i++) {
-		answer[i] = tolower(answer[i]);
-		if (answer[i] == '\r' || answer[i] == '\n') {
-			answer[i] = '\0';
-			break;
-		}
-	}
-
-	if (strcmp(answer, "yes") == 0 || strcmp(answer, "y") == 0 || answer[0] == '\0') {
-		char cmd[128] = "git clone https://github.com/Wii-Linux/";
-
-		if (chdir(base) != 0) {
-			fprintf(stderr, ERR "chdir(\"%s\") failed: %s\r\n" RESET, base, strerror(errno));
-			exit(1);
-		}
-		strcat(cmd, name);
-		if (system(cmd) != 0) {
-			printf(ERR "An error has occurred while attempting to download" ITEM "%s" ERR "!\r\n" RESET
-					"Please check your internet connection and try again.\r\n", cmd);
-			exit(1);
-		}
-	}
-	else if (strcmp(answer, "no") == 0 || strcmp(answer, "n") == 0) {
+	if (!confirmation(confText)) {
 		printf(WARN "Offer to download denied, however, source " ITEM "%s" WARN " does not exist, but is required.\r\n"
 				ERR "Exiting...\r\n" RESET,
 				name
 		);
 		exit(retOnErr);
 	}
-	else {
-		printf(ERR "Invalid answer \"%s\"!\r\n" RESET, answer);
-		// reset the state
-		memset(answer, 0, sizeof(answer));
-		goto startDl;
+
+	char cmd[128] = "git clone https://github.com/Wii-Linux/";
+
+	if (chdir(base) != 0) {
+		fprintf(stderr, ERR "chdir(\"%s\") failed: %s\r\n" RESET, base, strerror(errno));
+		exit(1);
+	}
+	strcat(cmd, name);
+	if (system(cmd) != 0) {
+		printf(ERR "An error has occurred while attempting to download" ITEM "%s" ERR "!\r\n" RESET
+				"Please check your internet connection and try again.\r\n", cmd);
+		exit(1);
 	}
 }
 
@@ -233,6 +243,7 @@ int main(int argc, char *argv[], char *envp[]) {
 				promptForDownload(base, directories[i].name, RET_NO_SRC);
 			}
 			else if (directories[i].flags & FLAG_GENERATE) {
+				printf("generate\r\n");
 				// TODO
 			}
 			else {
