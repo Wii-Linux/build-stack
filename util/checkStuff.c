@@ -163,6 +163,7 @@ static const item_t programs[] = {
 	{ "ld", "Host system linker", "", REQ_HARD, FLAG_NONE, NULL },
 	{ "make", "Host system make", "", REQ_HARD, FLAG_NONE, NULL },
 	{ "cpio", "Utility for dealing with the CPIO archive format - required by buildroot", "", REQ_HARD, FLAG_NONE, NULL },
+	{ "tar", "Utility for dealing with the TAR archive format - required by buildroot, and for managing the rootfs", "", REQ_HARD, FLAG_NONE, NULL },
 	{ "git", "Git version control software", "The auto-download feature won't work properly if you're missing any code!", REQ_WARN, FLAG_SETVAR, &hasGit },
 	{ "bc", "Basic calculator, needed by Linux kernel", "You won't be able to compile the kernel", REQ_WARN, FLAG_NONE, NULL },
 	{ "powerpc-unknown-linux-gnu-gcc", "PowerPC Cross-Toolchain compiler", "", REQ_HARD, FLAG_NONE, NULL },
