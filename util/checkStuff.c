@@ -167,6 +167,7 @@ static const item_t programs[] = {
 	{ "git", "Git version control software", "The auto-download feature won't work properly if you're missing any code!", REQ_WARN, FLAG_SETVAR, &hasGit },
 	{ "bc", "Basic calculator, needed by Linux kernel", "You won't be able to compile the kernel", REQ_WARN, FLAG_NONE, NULL },
 	{ "hostname", "Report the system hostname, needed by Linux kernel", "You won't be able to compile the kernel", REQ_WARN, FLAG_NONE, NULL },
+	{ "mksquashfs", "Tool to make a squashfs filesystem", "You won't be able to compile a loader", REQ_WARN, FLAG_NONE, NULL },
 	{ "powerpc-unknown-linux-gnu-gcc", "PowerPC Cross-Toolchain compiler", "", REQ_HARD, FLAG_NONE, NULL },
 	{ "powerpc-unknown-linux-gnu-ld", "PowerPC Cross-Toolchain linker", "", REQ_HARD, FLAG_NONE, NULL },
 	{ "powerpc-unknown-linux-gnu-as", "PowerPC Cross-Toolchain assembler", "", REQ_HARD, FLAG_NONE, NULL },
