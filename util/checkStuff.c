@@ -179,8 +179,9 @@ static const item_t directories[] = {
 	{ "boot-stack", "Wii Linux boot stack (custom init scripts and boot menu)", "You won't be able to build the loader(s)", REQ_WARN, FLAG_ALLOW_DOWNLOAD, NULL },
 	{ "build-stack", "Wii Linux build stack", "", REQ_HARD, FLAG_ALLOW_DOWNLOAD, NULL },
 	{ "installer", "Wii Linux installer source code", "You won't be able to build the installer", REQ_WARN, FLAG_ALLOW_DOWNLOAD, NULL },
-	{ "initrd-src", "Built sources for the internal loader", "", REQ_NONE, FLAG_GENERATE, NULL },
-	{ "loader-img-src", "Built sources for the boot menu / loader.img", "", REQ_NONE, FLAG_GENERATE, NULL },
+	{ "initrd-src", "Built sources for the internal loader", "", REQ_HARD, FLAG_GENERATE, NULL },
+	{ "dummy-sysroot-src", "A copy of the sysroot from sdk.config in order to pull headers and similar from", "", REQ_HARD, FLAG_GENERATE, NULL },
+	{ "loader-img-src", "Built sources for the boot menu / loader.img", "", REQ_HARD, FLAG_GENERATE, NULL },
 	{ "", "", "", REQ_HARD, FLAG_NONE, NULL }
 };
 

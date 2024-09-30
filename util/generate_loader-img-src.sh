@@ -6,7 +6,7 @@ if [ "$(basename $PWD)" != "buildroot" ]; then
 fi
 
 make distclean
-cp in-kernel-ramfs.config .config
+cp loader-img.config .config
 make -j$(nproc)
 
 # since we're in -e, we know that make succeded, but just in case
@@ -16,11 +16,11 @@ if ! [ -f output/images/rootfs.tar ]; then
 fi
 
 cd ..
-mkdir initrd-src
-cd initrd-src
+mkdir loader-img-src
+cd loader-img-src
 if ! tar -p --xattrs -xf ../buildroot/output/images/rootfs.tar; then
 	echo "failed to extract, nuking dir"
 	cd ..
-	rm -r initrd-src
+	rm -r loader-img-src
 fi
 
