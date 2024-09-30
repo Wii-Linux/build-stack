@@ -1,5 +1,5 @@
-export CROSS_COMPILE="ccache powerpc-unknown-linux-gnu-"
-export CC="ccache powerpc-unknown-linux-gnu-gcc"
+export CROSS_COMPILE="powerpc-unknown-linux-gnu-"
+export CC="powerpc-unknown-linux-gnu-gcc"
 export ARCH=powerpc
 
 datefmt() {
