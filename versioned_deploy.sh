@@ -2,7 +2,7 @@
 . utils.sh
 
 # Constants
-BASE_DIR="/dummydir"
+BASE_DIR="/srv/www/wii-linux.org/site/files"
 
 # Variables passed in
 source_file=$1
