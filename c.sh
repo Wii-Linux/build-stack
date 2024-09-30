@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-sudo powerpc-unknown-linux-gnu-gcc -Wall -Wextra -std=gnu2x \
+powerpc-unknown-linux-gnu-gcc -Wall -Wextra -std=gnu2x \
 	-nostdlib -nostartfiles -nostdinc \
 	-Ofast -DPROD_BUILD \
 	-Wl,-rpath ../loader-img-src/usr/lib -L ../loader-img-src/usr/lib \
