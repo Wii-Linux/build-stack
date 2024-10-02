@@ -191,7 +191,10 @@ else fatal "$ldr doesn't exist"; fi
 
 if ! [ -d "$dest" ]; then fatal "$(basename $dest) does not exist!"; fi
 
+rm -f "$dest/init" "$dest/linuxrc" "$dest/usr/sbin/init"
+cp init.sh               "$dest/init"
 cp init.sh               "$dest/linuxrc"
+cp init.sh               "$dest/usr/sbin/init"
 cp support.sh logging.sh "$dest/"
 
 cd "$dest"
@@ -211,7 +214,9 @@ fi
 # build the real deal kernel and modules
 cd "$BASE/$1" || fatal "kernel directory disappeared"
 make ${target}_defconfig
-make "$make_args"
+if ! make "$make_args"; then
+	fatal "make failed...."
+fi
 
 if [ "$is_installer" != "true" ]; then
 	tmp="$(mktemp -d wii_linux_kernel_build_XXXXXXXXXX --tmpdir=/tmp)"
