@@ -154,6 +154,7 @@ static void promptForDownload(char *base, const char *name, int retOnErr) {
 		exit(1);
 	}
 }
+#define WARN_BUILDROOT "You won't be able to use buildroot features"
 
 
 
@@ -163,10 +164,14 @@ static const item_t programs[] = {
 	{ "ld", "Host system linker", "", REQ_HARD, FLAG_NONE, NULL },
 	{ "make", "Host system make", "", REQ_HARD, FLAG_NONE, NULL },
 	{ "autoreconf", "Host system autoconf", "", REQ_HARD, FLAG_NONE, NULL },
-	{ "cpio", "Utility for dealing with the CPIO archive format - required by buildroot", "", REQ_HARD, FLAG_NONE, NULL },
-	{ "tar", "Utility for dealing with the TAR archive format - required by buildroot, and for managing the rootfs", "", REQ_HARD, FLAG_NONE, NULL },
-	{ "unzip", "Utility for unzipping files - required by buildroot", "", REQ_HARD, FLAG_NONE, NULL },
-	{ "rsync", "Utility for file and directory synchronization - required by buildroot", "", REQ_HARD, FLAG_NONE, NULL },
+	{ "flex", "Host system flex", "", REQ_HARD, FLAG_NONE, NULL },
+	{ "makeinfo", "Host system makeinfo", "", REQ_HARD, FLAG_NONE, NULL },
+	{ "help2man", "Host system help2man", "", REQ_HARD, FLAG_NONE, NULL },
+	{ "libtool", "Host system libtool", "", REQ_HARD, FLAG_NONE, NULL },
+	{ "cpio", "Utility for dealing with the CPIO archive format", WARN_BUILDROOT, REQ_WARN, FLAG_NONE, NULL },
+	{ "tar", "Utility for dealing with the TAR archive format - required for managing the rootfs", "", REQ_HARD, FLAG_NONE, NULL },
+	{ "unzip", "Utility for unzipping files", WARN_BUILDROOT, REQ_WARN, FLAG_NONE, NULL },
+	{ "rsync", "Utility for file and directory synchronization", WARN_BUILDROOT, REQ_WARN, FLAG_NONE, NULL },
 	{ "git", "Git version control software", "The auto-download feature won't work properly if you're missing any code!", REQ_WARN, FLAG_SETVAR, &hasGit },
 	{ "bc", "Basic calculator, needed by Linux kernel", "You won't be able to compile the kernel", REQ_WARN, FLAG_NONE, NULL },
 	{ "hostname", "Report the system hostname, needed by Linux kernel", "You won't be able to compile the kernel", REQ_WARN, FLAG_NONE, NULL },
