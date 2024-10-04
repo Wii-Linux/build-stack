@@ -149,8 +149,8 @@ static void promptForDownload(char *base, const char *name, int retOnErr) {
 	}
 	strcat(cmd, name);
 	if (system(cmd) != 0) {
-		printf(ERR "An error has occurred while attempting to download" ITEM "%s" ERR "!\r\n" RESET
-				"Please check your internet connection and try again.\r\n", cmd);
+		printf(ERR "An error has occurred while attempting to download " ITEM "%s" ERR "!\r\n" RESET
+				"Please check your internet connection and try again.\r\n", name);
 		exit(1);
 	}
 }
