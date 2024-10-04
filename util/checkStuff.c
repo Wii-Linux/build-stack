@@ -162,6 +162,7 @@ static const item_t programs[] = {
 	{ "as", "Host system assembler", "", REQ_HARD, FLAG_NONE, NULL },
 	{ "ld", "Host system linker", "", REQ_HARD, FLAG_NONE, NULL },
 	{ "make", "Host system make", "", REQ_HARD, FLAG_NONE, NULL },
+	{ "autoreconf", "Host system autoconf", "", REQ_HARD, FLAG_NONE, NULL },
 	{ "cpio", "Utility for dealing with the CPIO archive format - required by buildroot", "", REQ_HARD, FLAG_NONE, NULL },
 	{ "tar", "Utility for dealing with the TAR archive format - required by buildroot, and for managing the rootfs", "", REQ_HARD, FLAG_NONE, NULL },
 	{ "unzip", "Utility for unzipping files - required by buildroot", "", REQ_HARD, FLAG_NONE, NULL },
