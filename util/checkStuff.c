@@ -202,6 +202,7 @@ int main(int argc, char *argv[], char *envp[]) {
 	(void)envp;
 
 	char *base = argv[1];
+	bool gotWarn = false;
 	printf(STEP "Now checking your host system for software compatibility...\r\n" RESET);
 	while (programs[i].name[0] != '\0') {
 		printf(ITEM "%s" RESET ": %s... ", programs[i].name, programs[i].description);
@@ -219,6 +220,7 @@ int main(int argc, char *argv[], char *envp[]) {
 				return RET_NO_PROG;
 			case REQ_WARN:
 				printf(WARN "%s\r\n" RESET, programs[i].warning);
+				gotWarn = true;
 				break;
 			case REQ_NONE:
 				// do nothing
@@ -231,6 +233,15 @@ int main(int argc, char *argv[], char *envp[]) {
 		}
 		i++;
 	}
+	if (gotWarn) {
+		if (!confirmation(WARN "Warnings" RESET " were detected during checking process.  Continue? [Y/n] ")) {
+			puts("Exiting...");
+			return 1;
+		}
+		puts("Continuing...");
+		gotWarn = false;
+	}
+
 
 	printf(STEP "\r\nNow checking your host system for all required Wii Linux code...\r\n" RESET);
 	i = 0;
@@ -253,46 +264,69 @@ int main(int argc, char *argv[], char *envp[]) {
 		}
 		else {
 			puts(ERR "FAIL" RESET);
-			printf(ERR "FAILED" RESET " to find the source directory " ITEM "%s" RESET "!\r\n", name);
-			if (directories[i].flags & FLAG_ALLOW_DOWNLOAD) {
-				promptForDownload(base, name, RET_NO_SRC);
-			}
-			else if (directories[i].flags & FLAG_GENERATE) {
-				char confText[128];
-				char cmd[64] = "../build-stack/util/generate_";
-				int ret;
-				puts("This program can " GOOD "automatically generate" RESET " this code for you!");
-				snprintf(confText, sizeof(confText), "Would you like to generate " ITEM "%s" RESET " using buildroot? [Y/n] ", name);
 
-				if (!confirmation(confText)) {
-					printf(WARN "Offer to generate denied, however, source " ITEM "%s" WARN " does not exist, but is required.\r\n"
-							ERR "Exiting...\r\n" RESET,
+			switch (directories[i].requirement) {
+			case REQ_HARD:
+				printf(ERR "FAILED" RESET " to find the source directory " ITEM "%s" RESET "!\r\n", name);
+				if (directories[i].flags & FLAG_ALLOW_DOWNLOAD) {
+					promptForDownload(base, name, RET_NO_SRC);
+				}
+				else if (directories[i].flags & FLAG_GENERATE) {
+					char confText[128];
+					char cmd[64] = "../build-stack/util/generate_";
+					int ret;
+					puts("This program can " GOOD "automatically generate" RESET " this code for you!");
+					snprintf(confText, sizeof(confText), "Would you like to generate " ITEM "%s" RESET " using buildroot? [Y/n] ", name);
+
+					if (!confirmation(confText)) {
+						printf(WARN "Offer to generate denied, however, source " ITEM "%s" WARN " does not exist, but is required.\r\n"
+								ERR "Exiting...\r\n" RESET,
+								name
+						);
+						return RET_NO_SRC;
+					}
+
+					chdir(base);
+					chdir("buildroot");
+
+					// generate the command
+					strcat(cmd, name);
+					strcat(cmd, ".sh");
+					ret = system(cmd);
+					if (ret != 0) {
+						printf(ERR "Generating " ITEM "%s" ERR " FAILED!\r\n" WARN
+							"This is an " ERR "ERROR" WARN " in the code, and should be reported!\r\n" RESET,
 							name
-					);
+						);
+						return 1;
+					}
+					printf("Generating " ITEM "%s" GOOD " SUCCESS!\r\n" RESET, name);
+				}
+				else {
 					return RET_NO_SRC;
 				}
+			case REQ_WARN:
+				printf(WARN "%s\r\n" RESET, directories[i].warning);
+				gotWarn = true;
 
-				chdir(base);
-				chdir("buildroot");
-
-				// generate the command
-				strcat(cmd, name);
-				strcat(cmd, ".sh");
-				ret = system(cmd);
-				if (ret != 0) {
-					printf(ERR "Generating " ITEM "%s" ERR " FAILED!\r\n" WARN
-						"This is an " ERR "ERROR" WARN " in the code, and should be reported!\r\n" RESET,
-						name
-					);
-					return 1;
-				}
-				printf("Generating " ITEM "%s" GOOD " SUCCESS!\r\n" RESET, name);
-			}
-			else {
-				return RET_NO_SRC;
+			case REQ_NONE:
+				// do nothing
+				break;
+			default:
+				printf(ERR "INTERNAL ERROR" RESET " - %d isn't a valid value for .requirement of a directory!\r\n", directories[i].requirement);
+				return 1;
 			}
 		}
 		i++;
+	}
+
+	if (gotWarn) {
+		if (!confirmation(WARN "Warnings" RESET " were detected during checking process.  Continue? [Y/n] ")) {
+			puts("Exiting...");
+			return 1;
+		}
+		puts("Continuing...");
+		gotWarn = false;
 	}
 
 	return 0;
