@@ -213,17 +213,17 @@ int main(int argc, char *argv[], char *envp[]) {
 			puts(ERR "FAIL" RESET);
 			if (programs[i].flags & FLAG_SETVAR) { *programs[i].toSet = false; }
 
-			if (programs[i].requirement == REQ_HARD) {
+			switch (programs[i].requirement) {
+			case REQ_HARD:
 				printf(ERR "FAILED" RESET " to find an executable binary for program " ITEM "%s" RESET "!  Please install it.\r\n", programs[i].name);
 				return RET_NO_PROG;
-			}
-			else if (programs[i].requirement == REQ_WARN) {
+			case REQ_WARN:
 				printf(WARN "%s\r\n" RESET, programs[i].warning);
-			}
-			else if (programs[i].requirement == REQ_NONE) {
+				break;
+			case REQ_NONE:
 				// do nothing
-			}
-			else {
+				break;
+			default:
 				printf(ERR "INTERNAL ERROR" RESET " - %d isn't a valid value for .requirement of a program!\r\n", programs[i].requirement);
 				return 1;
 			}
