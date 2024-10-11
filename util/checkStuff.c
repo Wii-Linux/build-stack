@@ -122,7 +122,7 @@ static bool progInPath(const char *execName) {
     return false;
 }
 
-static void promptForDownload(char *base, const char *name, int retOnErr) {
+static void promptForDownload(char *base, const char *name, int retOnErr, req_t req) {
 	char confText[128];
 	puts("This program can " GOOD "automatically download" RESET " this source code for you!");
 
@@ -134,11 +134,19 @@ static void promptForDownload(char *base, const char *name, int retOnErr) {
 	snprintf(confText, sizeof(confText), "Would you like to download " ITEM "%s" RESET " using git? [Y/n] ", name);
 
 	if (!confirmation(confText)) {
-		printf(WARN "Offer to download denied, however, source " ITEM "%s" WARN " does not exist, but is required.\r\n"
-				ERR "Exiting...\r\n" RESET,
-				name
-		);
-		exit(retOnErr);
+		switch (req) {
+		case REQ_HARD: {
+			printf(WARN "Offer to download denied, however, source " ITEM "%s" WARN " does not exist, but is required.\r\n"
+					ERR "Exiting...\r\n" RESET,
+					name
+			);
+			exit(retOnErr);
+		}
+		case REQ_WARN:
+		case REQ_NONE:
+		default:
+			return;
+		}
 	}
 
 	char cmd[128] = "git clone https://github.com/Wii-Linux/";
@@ -268,43 +276,6 @@ int main(int argc, char *argv[], char *envp[]) {
 			switch (directories[i].requirement) {
 			case REQ_HARD:
 				printf(ERR "FAILED" RESET " to find the source directory " ITEM "%s" RESET "!\r\n", name);
-				if (directories[i].flags & FLAG_ALLOW_DOWNLOAD) {
-					promptForDownload(base, name, RET_NO_SRC);
-				}
-				else if (directories[i].flags & FLAG_GENERATE) {
-					char confText[128];
-					char cmd[64] = "../build-stack/util/generate_";
-					int ret;
-					puts("This program can " GOOD "automatically generate" RESET " this code for you!");
-					snprintf(confText, sizeof(confText), "Would you like to generate " ITEM "%s" RESET " using buildroot? [Y/n] ", name);
-
-					if (!confirmation(confText)) {
-						printf(WARN "Offer to generate denied, however, source " ITEM "%s" WARN " does not exist, but is required.\r\n"
-								ERR "Exiting...\r\n" RESET,
-								name
-						);
-						return RET_NO_SRC;
-					}
-
-					chdir(base);
-					chdir("buildroot");
-
-					// generate the command
-					strcat(cmd, name);
-					strcat(cmd, ".sh");
-					ret = system(cmd);
-					if (ret != 0) {
-						printf(ERR "Generating " ITEM "%s" ERR " FAILED!\r\n" WARN
-							"This is an " ERR "ERROR" WARN " in the code, and should be reported!\r\n" RESET,
-							name
-						);
-						return 1;
-					}
-					printf("Generating " ITEM "%s" GOOD " SUCCESS!\r\n" RESET, name);
-				}
-				else {
-					return RET_NO_SRC;
-				}
 			case REQ_WARN:
 				printf(WARN "%s\r\n" RESET, directories[i].warning);
 				gotWarn = true;
@@ -315,6 +286,51 @@ int main(int argc, char *argv[], char *envp[]) {
 			default:
 				printf(ERR "INTERNAL ERROR" RESET " - %d isn't a valid value for .requirement of a directory!\r\n", directories[i].requirement);
 				return 1;
+			}
+			
+			if (directories[i].flags & FLAG_ALLOW_DOWNLOAD) {
+				promptForDownload(base, name, RET_NO_SRC, directories[i].requirement);
+			}
+			else if (directories[i].flags & FLAG_GENERATE) {
+				char confText[128];
+				char cmd[64] = "../build-stack/util/generate_";
+				int ret;
+				puts("This program can " GOOD "automatically generate" RESET " this code for you!");
+				snprintf(confText, sizeof(confText), "Would you like to generate " ITEM "%s" RESET " using buildroot? [Y/n] ", name);
+
+				if (!confirmation(confText) && directories[i].requirement == REQ_HARD) {
+					printf(WARN "Offer to generate denied, however, source " ITEM "%s" WARN " does not exist, but is required.\r\n"
+							ERR "Exiting...\r\n" RESET,
+							name
+					);
+					return RET_NO_SRC;
+				}
+
+				chdir(base);
+				chdir("buildroot");
+
+				// generate the command
+				strcat(cmd, name);
+				strcat(cmd, ".sh");
+				ret = system(cmd);
+				if (ret != 0) {
+					printf(ERR "Generating " ITEM "%s" ERR " FAILED!\r\n" WARN
+						"This is an " ERR "ERROR" WARN " in the code, and should be reported!\r\n" RESET,
+						name
+					);
+					return 1;
+				}
+				printf("Generating " ITEM "%s" GOOD " SUCCESS!\r\n" RESET, name);
+			}
+			else {
+				switch (directories[i].requirement) {
+				case REQ_HARD:
+					return RET_NO_SRC;
+				case REQ_WARN:
+				case REQ_NONE:
+				default:
+					break;
+				}
 			}
 		}
 		i++;
