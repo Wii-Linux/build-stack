@@ -24,3 +24,5 @@ if ! tar -p --xattrs -xf ../buildroot/output/images/rootfs.tar; then
 	rm -r initrd-src
 fi
 
+# causes SIGILL somehow if setuid.  It runs as root anyways, so it doesn't matter.
+chmod -s usr/bin/busybox
