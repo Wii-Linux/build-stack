@@ -29,3 +29,7 @@ chmod -s usr/bin/busybox
 
 # force /sbin/init to exist and point to us
 ln -sf /linuxrc usr/sbin/init
+
+# add symlinks for ld.so
+ln -sf ld-uClibc.so.1 usr/lib/ld.so.0
+ln -sf ld-uClibc.so.1 usr/lib/ld.so.1
