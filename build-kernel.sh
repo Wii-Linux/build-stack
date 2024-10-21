@@ -168,11 +168,6 @@ if [ "$no_source_env" != "true" ]; then
 fi
 
 if [ "$is_installer" != "true" ]; then
-	# build the kernel modules for the internal initramfs
-	make ${target}_ultratiny_defconfig
-	make "$make_args"
-	make INSTALL_MOD_PATH="$BASE/initrd-src/usr/" modules_install
-
 	# build the kernel modules for the loader
 	make ${target}_smaller_defconfig
 	make "$make_args"
