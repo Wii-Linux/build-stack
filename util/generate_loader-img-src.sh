@@ -24,3 +24,8 @@ if ! tar -p --xattrs -xf ../buildroot/output/images/rootfs.tar; then
 	rm -r loader-img-src
 fi
 
+# causes SIGILL somehow if setuid.  It runs as root anyways, so it doesn't matter.
+chmod -s usr/bin/busybox
+
+# force /sbin/init to exist and point to us
+ln -sf /linuxrc usr/sbin/init
