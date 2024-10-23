@@ -20,7 +20,14 @@ Report any bugs to the GitHub issues page.
 EOF
 }
 
-OUT="$PWD/$1"
+first_letter=$(printf %.1s "$1")
+if [ "$first_letter" = "/" ] && [ "$1" != "/" ]; then
+	# absolute path, but we aren't hosing the host
+	OUT="$1"
+else
+	# relative path
+	OUT="$PWD/$1"
+fi
 
 # strip trailing /
 OUT="${OUT%/}"
