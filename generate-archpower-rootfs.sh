@@ -71,6 +71,7 @@ echo 'root:wiilinux' | chpasswd
 gumboot-mkconfig -o /boot/gumboot/gumboot.lst
 systemctl enable NetworkManager
 systemctl enable systemd-timesyncd
+cp /var/lib/wii-linux/configmii/etc-issue/banner_wii-linux.txt /etc/issue
 
 EOF
 chmod +x "$OUT"/setup.sh
