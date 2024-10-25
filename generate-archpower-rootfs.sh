@@ -66,7 +66,7 @@ cd "$BASE"
 rm -rf "$OUT"
 mkdir -p "$OUT"
 
-pacstrap -KMC build-stack/conf/wiilinux-pacman.conf "$OUT" base wii-linux-kernel-stable wii-linux-loader-stable wii-linux-meta gumboot-utils networkmanager vim nano less wget openssh
+pacstrap -KMC build-stack/conf/wiilinux-pacman.conf "$OUT" base wii-linux-kernel-stable wii-linux-loader-stable wii-linux-meta gumboot-utils baedit networkmanager vim nano less wget openssh
 
 # pacstrap doesn't maintain our custom pacman.conf
 cp build-stack/conf/wiilinux-pacman.conf "$OUT/etc/pacman.conf"
@@ -79,6 +79,7 @@ gumboot-mkconfig -o /boot/gumboot/gumboot.lst
 systemctl enable NetworkManager
 systemctl enable systemd-timesyncd
 cp /var/lib/wii-linux/configmii/etc-issue/banner_wii-linux.txt /etc/issue
+pacman --noconfirm -Scc
 
 EOF
 chmod +x "$OUT"/setup.sh
