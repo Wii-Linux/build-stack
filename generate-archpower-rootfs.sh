@@ -80,6 +80,7 @@ systemctl enable NetworkManager
 systemctl enable systemd-timesyncd
 cp /var/lib/wii-linux/configmii/etc-issue/banner_wii-linux.txt /etc/issue
 pacman --noconfirm -Scc
+echo 'archpower-wii-linux' > /etc/hostname
 
 EOF
 chmod +x "$OUT"/setup.sh
