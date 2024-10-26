@@ -70,17 +70,36 @@ pacstrap -KMC build-stack/conf/wiilinux-pacman.conf "$OUT" base wii-linux-kernel
 
 # pacstrap doesn't maintain our custom pacman.conf
 cp build-stack/conf/wiilinux-pacman.conf "$OUT/etc/pacman.conf"
+cp build-stack/conf/zram-setup.sh "$OUT/var/lib/wii-linux/zram-setup.sh"
+chmod +x "$OUT/var/lib/wii-linux/zram-setup.sh"
 cat << EOF > "$OUT"/setup.sh
 #!/bin/sh
+# set the pacman keys
 pacman-key --init
 pacman-key --populate archpower
+
+# set password
 echo 'root:wiilinux' | chpasswd
+
+# generate gumboot config
 gumboot-mkconfig -o /boot/gumboot/gumboot.lst
+
+# enable services
 systemctl enable NetworkManager
 systemctl enable systemd-timesyncd
+
+# set default /etc/issue
 cp /var/lib/wii-linux/configmii/etc-issue/banner_wii-linux.txt /etc/issue
-pacman --noconfirm -Scc
+
+# clear pacman cache
+yes | pacman -Scc
+
+# set default hostname
 echo 'archpower-wii-linux' > /etc/hostname
+
+# set up ZRAM since the Wii has such little physical RAM
+echo 'zram' > /etc/modules-load.d/zram.conf
+echo 'ACTION=="add", KERNEL=="zram0", ATTR{comp_algorithm}="zstd", ATTR{disksize}="64M", RUN="/var/lib/wii-linux/zram-setup.sh /dev/%k", TAG+="systemd"' > /etc/udev/rules.d/99-zram.rules
 
 EOF
 chmod +x "$OUT"/setup.sh
