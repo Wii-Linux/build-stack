@@ -59,6 +59,14 @@ if [ "$(id -u)" != "0" ]; then
 	fatal "Script must be run as root, as it uses pacstrap."
 fi
 
+if ! command -v mkfs.ext4 > /dev/null || ! command -v mkfs.vfat > /dev/null; then
+	fatal "Missing mkfs.ext4 or mkfs.vfat"
+fi
+
+if ! command -v zip > /dev/null; then
+	fatal "Missing zip"
+fi
+
 echo "output dir: $OUT"
 echo "base dir: $BASE"
 
@@ -66,7 +74,7 @@ cd "$BASE"
 rm -rf "$OUT"
 mkdir -p "$OUT"
 
-pacstrap -KMC build-stack/conf/wiilinux-pacman.conf "$OUT" base wii-linux-kernel-stable wii-linux-loader-stable wii-linux-meta gumboot-utils baedit networkmanager vim nano less wget openssh
+pacstrap -KMC build-stack/conf/wiilinux-pacman.conf "$OUT" base archpower-keyring wii-linux-kernel-stable wii-linux-loader-stable wii-linux-meta gumboot-utils baedit networkmanager vim nano less wget openssh
 
 # pacstrap doesn't maintain our custom pacman.conf
 cp build-stack/conf/wiilinux-pacman.conf "$OUT/etc/pacman.conf"
@@ -75,6 +83,9 @@ cat << EOF > "$OUT"/setup.sh
 # set the pacman keys
 pacman-key --init
 pacman-key --populate archpower
+
+# set password hash type to SHA256 since yescrypt is so damn slow
+sed -i 's/ENCRYPT_METHOD YESCRYPT/ENCRYPT_METHOD SHA256/' /etc/login.defs
 
 # set password
 echo 'root:wiilinux' | chpasswd
@@ -85,6 +96,7 @@ gumboot-mkconfig -o /boot/gumboot/gumboot.lst
 # enable services
 systemctl enable NetworkManager
 systemctl enable systemd-timesyncd
+systemctl enable wii-linux-first-boot
 
 # set default /etc/issue
 cp /var/lib/wii-linux/configmii/etc-issue/banner_wii-linux.txt /etc/issue
@@ -98,7 +110,71 @@ EOF
 chmod +x "$OUT"/setup.sh
 chroot "$OUT" /setup.sh
 
-echo "making a tarball of the rootfs"
+echo "making disk images"
+fallocate -l 2G "$OUT-full-sd.img"
+fallocate -l 1792M "$OUT-root.img"
+cat << EOF | fdisk "$OUT-full-sd.img"
+o
+n
+p
+1
+
++256M
+n
+p
+2
+
+
+w
+EOF
+
+
+loop="$(losetup --show -Pf "$OUT-full-sd.img")"
+mkfs.ext4 -O '^verity' -O '^metadata_csum_seed' -L 'arch' "${loop}p2"
+mkfs.vfat -F32 "${loop}p1"
+
+mount "${loop}p2" "$OUT-mnt" --mkdir
+mount "${loop}p1" "$OUT-mnt/boot" --mkdir
+echo "copying boot to mounted image"
+cp -a "$OUT"/boot/* "$OUT-mnt/boot/"
+umount "$OUT-mnt/boot"
+
+# we're copying this
+rmdir "$OUT-mnt/boot"
+
+
+echo "making a tarball of the boot files"
 tar --preserve-permissions --acls --xattrs --sparse -czf "${OUT}-boot.tar.gz" -C "$OUT/boot" .
+
+echo "making a ZIP out of the boot files"
+(
+	cd "$OUT/boot"
+	zip -r "$OUT-boot.zip" .
+)
+
+echo "deleting boot files in preparation to make rootfs tarball"
 rm -rf "$OUT"/boot/*
+
+echo "making rootfs tarball"
 tar --preserve-permissions --acls --xattrs --sparse -czf "${OUT}-root.tar.gz" -C "$OUT/" .
+
+echo "making rootfs image"
+cp -a "$OUT"/* "$OUT-mnt/"
+umount "$OUT-mnt"
+
+dd if="${loop}p2" of="$OUT-root.img" bs=1M
+
+echo "removing loop devices"
+losetup -d "${loop}"
+
+echo "removing temporary mount directory"
+rmdir "$OUT-mnt"
+
+echo "compressing disk images"
+echo "Full SD..."
+gzip "$OUT-full-sd.img"
+
+echo "Rootfs only..."
+gzip "$OUT-root.img"
+
+echo "Done!"
