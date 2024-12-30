@@ -218,7 +218,7 @@ if [ "$is_installer" != "true" ]; then
 	if [ "$tmp" = "" ]; then fatal "mktemp didn't give valid output"; fi
 	mkdir -p "$tmp/usr/lib/modules"
 	make INSTALL_MOD_PATH="$tmp/usr" modules_install
-	tar czf "./modules-$s_ver-$(datefmt).tar.gz" --numeric-owner --owner=0 -C "$tmp" .
+	tar czf "./modules.tar.gz" --numeric-owner --owner=0 -C "$tmp" .
 fi
 
 
