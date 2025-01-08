@@ -11,6 +11,10 @@ Options:
 
        -g,--gamecube:           Builds a kernel for the Nintendo GameCube.
 
+       --android:               Builds a kernel for the specific console
+                                and bootloader, targetting Android
+                                (if supported).
+
        -j1:                     Force -j1 mode in make - useful if the build
                                 is failing for whatever reason.
 
@@ -21,6 +25,9 @@ Options:
 
        --installer:             Build targetting the Wii Linux Installer.
                                 Implies --ios and --wii.
+
+       --dry-run:               Do not actually build.  Just calculate tartget
+                                and perform some sanity checks.
 
   Compression Options:
        Note that none of these actually affect the kernel config.  You'll need
@@ -90,6 +97,8 @@ compression="lz4"
 is_installer="false"
 ldr_dir="$BASE/loader-img-src"
 make_args="-j$(nproc)"
+is_android=false
+dry_run=false
 
 for arg in "$@"; do
 	case "$arg" in
@@ -121,6 +130,10 @@ for arg in "$@"; do
 		--compress=none)
 			checkValid "$tmp_got_comp" true "2 compression methods"
 			compression="none"; tmp_got_comp=true ;;
+		--android)
+			is_android=true ;;
+		--dry-run)
+			dry_run=true ;;
 		-j1) make_args="-j1" ;;
 		--no-source-env) no_source_env=true ;;
 		-h|--help) usage; exit 0 ;; # show help
@@ -137,6 +150,11 @@ fi
 target="${con}"
 s_ver="$3"
 echo "Building for console: $con"
+echo "Building for Android: $is_android"
+if [ "$is_android" = "true" ]; then
+	target="${target}_android"
+fi
+
 if [ "$con" = "wii" ]; then
 	echo "Building for bootloader: $wii_bl"
 	echo "Building installer: $is_installer"
@@ -159,6 +177,12 @@ fi
 
 cd "$BASE/$1"
 
+
+if [ "$dry_run" = "true" ]; then
+	echo "Not actually building due to being a dry run"
+	exit 0
+fi
+
 # clean up any old builds
 rm -rf "$BASE/initrd-src/lib/modules/"* "$ldr_dir/lib/modules/"*
 
@@ -167,7 +191,7 @@ if [ "$no_source_env" != "true" ]; then
 	. "$BASE/build-stack/kernel-env.sh"
 fi
 
-if [ "$is_installer" != "true" ]; then
+if [ "$is_installer" != "true" ] && [ "$is_android" != "true" ]; then
 	# build the kernel modules for the loader
 	make ${target}_smaller_defconfig
 	make "$make_args"
