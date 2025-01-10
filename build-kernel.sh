@@ -2,7 +2,7 @@
 
 usage() {
 	cat << EOF
-Usage: build-kernel.sh [kernel src] [modules folder] [short version] <options>
+Usage: build-kernel.sh [kernel src] [modules folder] <options>
 
 Options:
        -w,--wii:                Builds a kernel for the Nintendo Wii.
@@ -67,10 +67,9 @@ and generating these ahead of time:
 
 All of these must be present in the parent directory of your kernel source.
 
-Example: build-kernel.sh kernel-4.5 4.5.0-wii+ v4_5_0
+Example: build-kernel.sh kernel-4.5 4.5.0-wii+
 This would build the kernel in the directory 'kernel-4.5', which will output
-modules to [install dir]/lib/modules/4.5.0-wii+, and will be packaged using
-the short version name 'v4_5_0'.
+modules to modules.tar.gz
 
 Report any bugs to the GitHub issues page.
 EOF
@@ -142,13 +141,12 @@ for arg in "$@"; do
 	esac
 done
 
-if [ "$#" -gt "8" ] || [ "$#" -lt "3" ]; then
+if [ "$#" -gt "7" ] || [ "$#" -lt "2" ]; then
 	error "bad number of arguments"
 	usage; exit 1
 fi
 
 target="${con}"
-s_ver="$3"
 echo "Building for console: $con"
 echo "Building for Android: $is_android"
 if [ "$is_android" = "true" ]; then
@@ -191,14 +189,15 @@ if [ "$no_source_env" != "true" ]; then
 	. "$BASE/build-stack/kernel-env.sh"
 fi
 
-if [ "$is_installer" != "true" ] && [ "$is_android" != "true" ]; then
+# this is removed
+#if [ "$is_installer" != "true" ] && [ "$is_android" != "true" ]; then
 	# build the kernel modules for the loader
-	make ${target}_smaller_defconfig
-	make "$make_args"
-	if [ "$is_installer" != "true" ]; then
-		make INSTALL_MOD_PATH="$ldr_dir/usr/" modules_install
-	fi
-fi
+#	make ${target}_smaller_defconfig
+#	make "$make_args"
+#	if [ "$is_installer" != "true" ]; then
+#		make INSTALL_MOD_PATH="$ldr_dir/usr/" modules_install
+#	fi
+#fi
 
 
 # rebuild the internal initramfs
@@ -247,4 +246,4 @@ fi
 
 
 
-echo "Kernel built!  Don't forget to rebuild the loader if you changed the wii_smaller_defconfig."
+echo "Kernel built!  Don't forget to rebuild the loader too!"
