@@ -276,10 +276,11 @@ int main(int argc, char *argv[], char *envp[]) {
 			switch (directories[i].requirement) {
 			case REQ_HARD:
 				printf(ERR "FAILED" RESET " to find the source directory " ITEM "%s" RESET "!\r\n", name);
+				break;
 			case REQ_WARN:
 				printf(WARN "%s\r\n" RESET, directories[i].warning);
 				gotWarn = true;
-
+				break;
 			case REQ_NONE:
 				// do nothing
 				break;
