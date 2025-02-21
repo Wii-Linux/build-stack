@@ -109,6 +109,7 @@ echo 'archpower-wii-linux' > /etc/hostname
 EOF
 chmod +x "$OUT"/setup.sh
 chroot "$OUT" /setup.sh
+rm -f "$OUT/setup.sh"
 
 echo "making disk images"
 fallocate -l 2G "$OUT-full-sd.img"
