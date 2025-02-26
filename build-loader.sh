@@ -88,7 +88,7 @@ base=$PWD
 cd "$base/build-stack"
 
 if [ "$is_installer" != "true" ]; then
-	./c.sh "-D${boot_menu_type}=1"
+	./util/build-boot-menu.sh "-D${boot_menu_type}=1"
 fi
 
 if [ -d "$base/boot-stack/loader-img-full" ]; then cd "$base/boot-stack/loader-img-full"
