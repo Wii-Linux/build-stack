@@ -75,12 +75,7 @@ Report any bugs to the GitHub issues page.
 EOF
 }
 
-checkValid() {
-	if [ "$1" = "$2" ]; then
-		error "you can't select $3"
-		usage; exit 1
-	fi
-}
+
 if [ -f ./utils.sh ]; then . ./utils.sh; cd ../; BASE="$PWD"; cd - > /dev/null
 elif [ -f ./build-stack/utils.sh ]; then . ./build-stack/utils.sh; BASE="$PWD"
 elif [ -f ../build-stack/utils.sh ]; then . ../build-stack/utils.sh; cd ../; BASE="$PWD"; cd - > /dev/null

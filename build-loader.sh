@@ -6,8 +6,21 @@ Usage: build-loader.sh [output file path] <options>
 
 Options:
        --installer:             Builds the installer bootstrap as a loader.
-
-
+       --boot-menu-type=[type]: Builds the boot menu targetting [type].
+                                Default is PROD_BUILD.
+                                The type can be one of:
+                                  - 'DEBUG_PC':
+                                      Debugging build for running on a PC.
+                                      It WILL NOT attempt to actually boot
+                                      the system, and WILL produce a logfile.
+                                  - 'DEBUG_WII'
+                                      Debugging build for running on a Wii.
+                                      It WILL attempt to actually boot the
+                                      system, and WILL produce a logfile.
+                                  - 'PROD_BUILD'
+                                      Normal build for running on a Wii.
+                                      It WILL attempt to actually boot the
+                                      system, and WILL NOT produce a logfile.
 
 
 Builds a loader.img for your specified kernel version.
@@ -37,18 +50,35 @@ else
 	exit 1
 fi
 
-case "$1" in
-	-h|--help) usage; exit 0 ;; # show help
-	"") usage; exit 1 ;; # user didn't provide anything
-esac
-
 dir="loader-img-src"
-case "$2" in
-	-h|--help) usage; exit 0 ;; # show help
-	--installer) is_installer=true; dir="installer-src" ;;
-esac
+boot_menu_type=PROD_BUILD
 
-out="$PWD/$1"
+for arg in "$@"; do
+	case "$arg" in
+		"") usage; exit 1 ;; # user didn't provide anything
+		--help) usage; exit 0 ;;
+		--installer) is_installer=true; dir="installer-src" ;;
+		--boot-menu-type|--boot-menu-type=) fatal "You must provide a type for this argument" ;;
+		--boot-menu-type=*)
+			type="$(echo "$arg" | sed 's/.*=//')"
+			case "$type" in
+				DEBUG_WII|DEBUG_PC|PROD_BUILD)
+					checkValid "$tmp_got_type" true "2 build types"
+					boot_menu_type="$type"; tmp_got_type=true ;;
+				*) fatal "Invalid boot menu type \"$type\"" ;;
+			esac
+			;;
+		--*)
+			error "Invalid parameter $arg"
+			usage
+			exit 1;;
+		*)
+
+			checkValid "$tmp_got_outfile" true "2 output file paths"
+			out="$PWD/$arg"; tmp_got_outfile=true ;;
+	esac
+done
+
 if [ -d build-stack ]; then cd build-stack
 elif [ -d ../build-stack ]; then cd ../build-stack
 else fatal "can't find build-stack"; fi
@@ -58,7 +88,7 @@ base=$PWD
 cd "$base/build-stack"
 
 if [ "$is_installer" != "true" ]; then
-	./c.sh
+	./c.sh "-D${boot_menu_type}=1"
 fi
 
 if [ -d "$base/boot-stack/loader-img-full" ]; then cd "$base/boot-stack/loader-img-full"

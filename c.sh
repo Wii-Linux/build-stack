@@ -1,8 +1,9 @@
 #!/bin/sh -e
 
+# args are used for -DPROD_BUILD, -DDEBUG_WII, or -DDEBUG_PC
 powerpc-unknown-linux-gnu-gcc -Wall -Wextra -std=gnu2x \
 	-nostdlib -nostartfiles -nostdinc \
-	-O2 -DPROD_BUILD \
+	-O2 "$@" \
 	-Wl,-rpath ../loader-img-src/usr/lib -L ../loader-img-src/usr/lib \
 	-isystem ../dummy-sysroot-src/powerpc-buildroot-linux-uclibc/sysroot/usr/include/ \
 	-isystem ../dummy-sysroot-src/lib/gcc/powerpc-buildroot-linux-uclibc/13.3.0/include \
