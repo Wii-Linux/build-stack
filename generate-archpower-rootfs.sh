@@ -20,6 +20,11 @@ Report any bugs to the GitHub issues page.
 EOF
 }
 
+if [ "$1" = "" ]; then
+	usage
+	exit 1
+fi
+
 first_letter=$(printf %.1s "$1")
 if [ "$first_letter" = "/" ] && [ "$1" != "/" ]; then
 	# absolute path, but we aren't hosing the host
