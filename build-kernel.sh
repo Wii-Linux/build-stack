@@ -2,7 +2,7 @@
 
 usage() {
 	cat << EOF
-Usage: build-kernel.sh [kernel src] [modules folder] <options>
+Usage: build-kernel.sh [kernel src] <options>
 
 Options:
        -w,--wii:                Builds a kernel for the Nintendo Wii.
@@ -23,9 +23,6 @@ Options:
                                 source your own before running the script if
                                 you plan to use this!
 
-       --installer:             Build targetting the Wii Linux Installer.
-                                Implies --ios and --wii.
-
        --dry-run:               Do not actually build.  Just calculate tartget
                                 and perform some sanity checks.
 
@@ -43,9 +40,6 @@ Options:
                                 initramfs.
 
   Wii Specific:
-       -i,--ios:                Builds an IOS kernel, if supported.
-                                If not supported, it will throw cryptic errors.
-
        -m,--mini:               Builds a kernel targetting the "MINI" firmware.
                                 This is the default option when building for
                                 the Wii.
@@ -63,7 +57,6 @@ I highly recommend creating a dedicated Wii Linux folder, and cloning at least:
 and generating these ahead of time:
 - initrd-src
 - loader-img-src
-- installer-src
 
 All of these must be present in the parent directory of your kernel source.
 
@@ -88,7 +81,6 @@ fi
 con="wii"
 wii_bl="mini"
 compression="lz4"
-is_installer="false"
 ldr_dir="$BASE/loader-img-src"
 make_args="-j$(nproc)"
 is_android=false
@@ -104,17 +96,10 @@ for arg in "$@"; do
 		-w|--wii)
 			checkValid "$tmp_got_con" true "2 consoles"
 			con="wii" tmp_got_con=true ;;
-		-i|--ios)
-			checkValid "$con"        "gamecube" "a Wii bootloader on a GameCube"
-			checkValid "$tmp_got_bl" true       "2 bootloaders"
-			wii_bl="ios"; tmp_got_bl=true ;;
 		-m|--mini)
 			checkValid "$con"        "gamecube" "a Wii bootloader on a GameCube"
 			checkValid "$tmp_got_bl" true       "2 bootloaders"
 			wii_bl="mini"; tmp_got_bl=true ;;
-		--installer)
-			checkValid "$con"        "gamecube" "the installer on a GameCube"
-			is_installer=true ;;
 		--lz4|--compress=lz4)
 			checkValid "$tmp_got_comp" true "2 compression methods"
 			compression="lz4"; tmp_got_comp=true ;;
@@ -150,11 +135,7 @@ fi
 
 if [ "$con" = "wii" ]; then
 	echo "Building for bootloader: $wii_bl"
-	echo "Building installer: $is_installer"
 
-	if [ "$is_installer" = "true" ]; then
-		ldr_dir="$BASE/installer-src"
-	fi
 	if [ "$wii_bl" != "mini" ]; then
 		target="${target}_${wii_bl}"
 	fi
@@ -183,16 +164,6 @@ if [ "$no_source_env" != "true" ]; then
 	# make sure we have the env, unless the user doesn't want it
 	. "$BASE/build-stack/kernel-env.sh"
 fi
-
-# this is removed
-#if [ "$is_installer" != "true" ] && [ "$is_android" != "true" ]; then
-	# build the kernel modules for the loader
-#	make ${target}_smaller_defconfig
-#	make "$make_args"
-#	if [ "$is_installer" != "true" ]; then
-#		make INSTALL_MOD_PATH="$ldr_dir/usr/" modules_install
-#	fi
-#fi
 
 
 # rebuild the internal initramfs
@@ -231,14 +202,11 @@ if ! make "$make_args"; then
 	fatal "make failed...."
 fi
 
-if [ "$is_installer" != "true" ]; then
-	tmp="$(mktemp -d wii_linux_kernel_build_XXXXXXXXXX --tmpdir=/tmp)"
-	if [ "$tmp" = "" ]; then fatal "mktemp didn't give valid output"; fi
-	mkdir -p "$tmp/usr/lib/modules"
-	make INSTALL_MOD_PATH="$tmp/usr" modules_install
-	tar czf "./modules.tar.gz" --numeric-owner --owner=0 -C "$tmp" .
-fi
-
+tmp="$(mktemp -d wii_linux_kernel_build_XXXXXXXXXX --tmpdir=/tmp)"
+if [ "$tmp" = "" ]; then fatal "mktemp didn't give valid output"; fi
+mkdir -p "$tmp/usr/lib/modules"
+make INSTALL_MOD_PATH="$tmp/usr" modules_install
+tar czf "./modules.tar.gz" --numeric-owner --owner=0 -C "$tmp" .
 
 
 echo "Kernel built!  Don't forget to rebuild the loader too!"
