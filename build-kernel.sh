@@ -121,7 +121,7 @@ for arg in "$@"; do
 	esac
 done
 
-if [ "$#" -gt "7" ] || [ "$#" -lt "2" ]; then
+if [ "$#" -gt "7" ] || [ "$#" -lt "1" ]; then
 	error "bad number of arguments"
 	usage; exit 1
 fi
