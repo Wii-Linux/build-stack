@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 checkValid() {
 	if [ "$1" = "$2" ]; then
 		error "you can't select $3"
@@ -7,12 +7,12 @@ checkValid() {
 }
 
 fatal() {
-    printf "\x1b[1;31mFATAL ERROR!!!: \x1b[0m%s\n" "$@"
+    printf "\033[1;31mFATAL ERROR!!!: \033[0m%s\n" "$@"
     exit 1
 }
 
 error() {
-    printf "\x1b[1;31mERROR: \x1b[0m%s\n" "$@"
+    printf "\033[1;31mERROR: \033[0m%s\n" "$@"
 }
 
 datefmt() {
