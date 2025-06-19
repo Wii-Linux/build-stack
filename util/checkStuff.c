@@ -182,7 +182,7 @@ static const item_t programs[] = {
 	{ "rsync", "Utility for file and directory synchronization", WARN_BUILDROOT, REQ_WARN, FLAG_NONE, NULL },
 	{ "git", "Git version control software", "The auto-download feature won't work properly if you're missing any code!", REQ_WARN, FLAG_SETVAR, &hasGit },
 	{ "bc", "Basic calculator, needed by Linux kernel", "You won't be able to compile the kernel", REQ_WARN, FLAG_NONE, NULL },
-	{ "lz4", "LZ4 compression utility - needed to build the internal loader", "You won't be able to compile the kernel", REQ_WARN, FLAG_NONE, NULL },
+	{ "lz4", "LZ4 compression utility - needed to build the loader", "You won't be able to compile the kernel", REQ_WARN, FLAG_NONE, NULL },
 	{ "hostname", "Report the system hostname, needed by Linux kernel", "You won't be able to compile the kernel", REQ_WARN, FLAG_NONE, NULL },
 	{ "mksquashfs", "Tool to make a squashfs filesystem", "You won't be able to compile a loader", REQ_WARN, FLAG_NONE, NULL },
 	{ "powerpc-unknown-linux-gnu-gcc", "PowerPC Cross-Toolchain compiler", "", REQ_HARD, FLAG_NONE, NULL },
@@ -194,13 +194,12 @@ static const item_t programs[] = {
 
 static const item_t directories[] = {
 	{ "buildroot", "Wii Linux buildroot fork",
-		"You won't be able to build the loader(s) unless you have a pre-generated copy of initrd-src and loader-img-src", REQ_WARN, FLAG_ALLOW_DOWNLOAD, NULL },
+		"You won't be able to build the loader(s) unless you have a pre-generated copy of loader-img-src", REQ_WARN, FLAG_ALLOW_DOWNLOAD, NULL },
 	{ "boot-stack", "Wii Linux boot stack (custom init scripts and boot menu)", "You won't be able to build the loader(s)", REQ_WARN, FLAG_ALLOW_DOWNLOAD, NULL },
 	{ "build-stack", "Wii Linux build stack", "", REQ_HARD, FLAG_ALLOW_DOWNLOAD, NULL },
 	{ "installer", "Wii Linux installer source code", "You won't be able to build the installer", REQ_WARN, FLAG_ALLOW_DOWNLOAD, NULL },
 	{ "dummy-sysroot-src", "A copy of the sysroot from sdk.config in order to pull headers and similar from", "", REQ_HARD, FLAG_GENERATE, NULL },
-	{ "initrd-src", "Built sources for the internal loader", "", REQ_HARD, FLAG_GENERATE, NULL },
-	{ "loader-img-src", "Built sources for the boot menu / loader.img", "", REQ_HARD, FLAG_GENERATE, NULL },
+	{ "loader-img-src", "Built sources for the boot menu / loaderg", "", REQ_HARD, FLAG_GENERATE, NULL },
 	{ "", "", "", REQ_HARD, FLAG_NONE, NULL }
 };
 

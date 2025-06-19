@@ -55,7 +55,6 @@ I highly recommend creating a dedicated Wii Linux folder, and cloning at least:
 - kernel of your choice
 
 and generating these ahead of time:
-- initrd-src
 - loader-img-src
 
 All of these must be present in the parent directory of your kernel source.
@@ -81,7 +80,6 @@ fi
 con="wii"
 wii_bl="mini"
 compression="lz4"
-ldr_dir="$BASE/loader-img-src"
 make_args="-j$(nproc)"
 is_android=false
 dry_run=false
@@ -157,9 +155,6 @@ if [ "$dry_run" = "true" ]; then
 	exit 0
 fi
 
-# clean up any old builds
-rm -rf "$BASE/initrd-src/lib/modules/"* "$ldr_dir/lib/modules/"*
-
 if [ "$no_source_env" != "true" ]; then
 	# make sure we have the env, unless the user doesn't want it
 	. "$BASE/build-stack/kernel-env.sh"
@@ -167,19 +162,8 @@ fi
 
 
 # rebuild the internal initramfs
-ldr="$BASE/boot-stack/internal-loader"
-dest="$BASE/initrd-src"
-
-if [ -d "$ldr" ]; then cd "$ldr"
-else fatal "$ldr doesn't exist"; fi
-
-if ! [ -d "$dest" ]; then fatal "$(basename $dest) does not exist!"; fi
-
-rm -f "$dest/init" "$dest/linuxrc" "$dest/usr/sbin/init"
-cp init.sh               "$dest/init"
-cp init.sh               "$dest/linuxrc"
-cp init.sh               "$dest/usr/sbin/init"
-cp support.sh logging.sh "$dest/"
+dest="$BASE/loader-img-src"
+"$BASE/build-stack/build-loader.sh"
 
 cd "$dest"
 find . -print0 | cpio --null --create --verbose --format=newc > "$BASE/initrd.cpio"
@@ -195,7 +179,7 @@ elif [ "$compression" = "none" ]; then
 	:
 fi
 
-# build the real deal kernel and modules
+# build the kernel and modules
 cd "$BASE/$1" || fatal "kernel directory disappeared"
 make ${target}_defconfig
 if ! make "$make_args"; then
@@ -207,6 +191,7 @@ if [ "$tmp" = "" ]; then fatal "mktemp didn't give valid output"; fi
 mkdir -p "$tmp/usr/lib/modules"
 make INSTALL_MOD_PATH="$tmp/usr" modules_install
 tar czf "./modules.tar.gz" --numeric-owner --owner=0 -C "$tmp" .
+rm -rf "$tmp"
 
 
 echo "Kernel built!  Don't forget to rebuild the loader too!"

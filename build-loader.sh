@@ -5,7 +5,6 @@ usage() {
 Usage: build-loader.sh [output file path] <options>
 
 Options:
-       --installer:             Builds the installer bootstrap as a loader.
        --boot-menu-type=[type]: Builds the boot menu targetting [type].
                                 Default is PROD_BUILD.
                                 The type can be one of:
@@ -33,7 +32,6 @@ I highly recommend creating a dedicated Wii Linux folder, and cloning at least:
 - kernel of your choice
 
 and generating these ahead of time:
-- initrd-src
 - loader-img-src
 
 All of these must be present in the parent directory, or cwd.
@@ -57,7 +55,6 @@ for arg in "$@"; do
 	case "$arg" in
 		"") usage; exit 1 ;; # user didn't provide anything
 		--help) usage; exit 0 ;;
-		--installer) is_installer=true; dir="installer-src" ;;
 		--boot-menu-type|--boot-menu-type=) fatal "You must provide a type for this argument" ;;
 		--boot-menu-type=*)
 			type="$(echo "$arg" | sed 's/.*=//')"
@@ -87,9 +84,7 @@ cd ..
 base=$PWD
 cd "$base/build-stack"
 
-if [ "$is_installer" != "true" ]; then
-	./util/build-boot-menu.sh "-D${boot_menu_type}=1"
-fi
+./util/build-boot-menu.sh "-D${boot_menu_type}=1"
 
 if [ -d "$base/boot-stack/loader-img-full" ]; then cd "$base/boot-stack/loader-img-full"
 else fatal "can't find boot-stack/loader-img-full"; fi
@@ -97,24 +92,5 @@ else fatal "can't find boot-stack/loader-img-full"; fi
 tmp="$base/$dir"
 if ! [ -d "$tmp" ]; then fatal "can't find $tmp"; fi
 
-if [ "$is_installer" = "true" ]; then
-	cd "$base/boot-stack/installer" || fatal "can't cd to $base/boot-stack/installer"
-fi
-
 cp support.sh checkBdev.sh network.sh util.sh logging.sh jit_setup.sh "$tmp/"
 cp init.sh "$tmp/linuxrc"
-
-if [ "$is_installer" = "true" ]; then
-	cd "$base/installer"
-	cp src/stage1.sh "$tmp/usr/bin/wiilinux-installer"
-
-	cd "$tmp"
-	../build-stack/util_installer.sh .
-
-	tar --no-recursion -cf "$out" -C "$tmp" -T "$tmp/file_list.txt"
-
-	# XXX: hack to forcibly add a /lib so that jit_setup can bindmount there
-	( cd /tmp; mkdir -p garbage_tmp_wii_linux_loader_build; cd garbage_tmp_wii_linux_loader_build; mkdir -p lib; tar -rf "$out" ./lib; cd "$(dirname $out)"; rm -r /tmp/garbage_tmp_wii_linux_loader_build; )
-else
-	mksquashfs "$tmp" "$out" -all-root -noappend
-fi
