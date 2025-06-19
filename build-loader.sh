@@ -94,4 +94,8 @@ cp init.sh "$tmp/init" || fatal "Failed to copy init to $tmp/init"
 if ! [ -d "$tmp/sbin" ]; then
 	mkdir "$tmp/sbin" || fatal "Failed to mkdir $tmp/sbin"
 fi
+if [ -L "$tmp/sbin/init" ]; then
+	# the copy will fail if it's a symlink, so prevent that
+	rm -f "$tmp/sbin/init" || fatal "Failed to remove $tmp/sbin/init"
+fi
 cp init.sh "$tmp/sbin/init" || fatal "Failed to copy init to $tmp/sbin/init"
