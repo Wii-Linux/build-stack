@@ -91,4 +91,7 @@ if ! [ -d "$tmp" ]; then fatal "can't find $tmp"; fi
 cp support.sh checkBdev.sh network.sh util.sh logging.sh jit_setup.sh "$tmp/" || fatal "Failed to copy files to $tmp"
 cp init.sh "$tmp/linuxrc" || fatal "Failed to copy init to $tmp/linuxrc"
 cp init.sh "$tmp/init" || fatal "Failed to copy init to $tmp/init"
+if ! [ -d "$tmp/sbin" ]; then
+	mkdir "$tmp/sbin" || fatal "Failed to mkdir $tmp/sbin"
+fi
 cp init.sh "$tmp/sbin/init" || fatal "Failed to copy init to $tmp/sbin/init"
