@@ -2,7 +2,7 @@
 
 usage() {
 	cat << EOF
-Usage: build-loader.sh [output file path] <options>
+Usage: build-loader.sh <options>
 
 Options:
        --boot-menu-type=[type]: Builds the boot menu targetting [type].
@@ -65,14 +65,10 @@ for arg in "$@"; do
 				*) fatal "Invalid boot menu type \"$type\"" ;;
 			esac
 			;;
-		--*)
+		*)
 			error "Invalid parameter $arg"
 			usage
 			exit 1;;
-		*)
-
-			checkValid "$tmp_got_outfile" true "2 output file paths"
-			out="$PWD/$arg"; tmp_got_outfile=true ;;
 	esac
 done
 
@@ -94,3 +90,5 @@ if ! [ -d "$tmp" ]; then fatal "can't find $tmp"; fi
 
 cp support.sh checkBdev.sh network.sh util.sh logging.sh jit_setup.sh "$tmp/"
 cp init.sh "$tmp/linuxrc"
+cp init.sh "$tmp/init"
+cp init.sh "$tmp/sbin/init"
