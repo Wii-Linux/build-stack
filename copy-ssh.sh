@@ -4,8 +4,7 @@
 
 usage() {
 	cat << EOF
-Usage: copy-ssh.sh [host] [dest] [short ver] [pretty ver] [kernel src]
-                   <options>
+Usage: copy-ssh.sh [host] [dest] [short ver] [kernel src] <options>
 
 Options:
 	None
@@ -31,8 +30,7 @@ Examples:
 MINI kernel version 4.4.302-cip80, residing in 'kernel-4.4-cip80', copy to
 techflash@172.16.4.10, and on that machine, the directory /mnt/sd is where
 you want to place the files.
-copy-ssh.sh techflash@172.16.4.10 /mnt/sd v4_4_302 4.4.302-cip80 \
-            kernel-4.4-cip80
+copy-ssh.sh techflash@172.16.4.10 /mnt/sd v4_4_302 kernel-4.4-cip80
 
 
 Report any bugs to the GitHub issues page.
@@ -53,7 +51,7 @@ for arg in "$@"; do
 		-h|--help) usage; exit 0 ;; # show help
 	esac
 done
-if [ "$#" != "5" ]; then
+if [ "$#" != "4" ]; then
 	error "invalid number of arguments"
 	usage; exit 1
 fi
@@ -62,8 +60,8 @@ if [ -d build-stack ]; then cd build-stack
 elif [ -d ../build-stack ]; then cd ../build-stack
 else fatal "can't find build-stack"; fi
 
-if ! [ -d "../$5" ]; then fatal "kernel directory doesn't exist"; fi
-cd "../$5"
+if ! [ -d "../$4" ]; then fatal "kernel directory doesn't exist"; fi
+cd "../$4"
 scp arch/powerpc/boot/zImage "$1:$2/wiilinux/$3.krn" || fatal "failed to copy kernel"
 cd ../
 
