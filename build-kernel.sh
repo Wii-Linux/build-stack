@@ -11,6 +11,8 @@ Options:
 
        -g,--gamecube:           Builds a kernel for the Nintendo GameCube.
 
+       -s,--standalone:         Builds a standalone (non-boot-menu-based) kernel.
+
        --android:               Builds a kernel for the specific console
                                 and bootloader, targetting Android
                                 (if supported).
@@ -79,6 +81,7 @@ fi
 # default to building for Wii, MINI bootloader, lz4 compression of initrd
 con="wii"
 wii_bl="mini"
+standalone=false
 compression="lz4"
 make_args="-j$(nproc)"
 is_android=false
@@ -111,6 +114,8 @@ for arg in "$@"; do
 			is_android=true ;;
 		--dry-run)
 			dry_run=true ;;
+		-s|--standalone)
+			standalone=true ;;
 		-j1) make_args="-j1" ;;
 		--no-source-env) no_source_env=true ;;
 		-h|--help) usage; exit 0 ;; # show help
@@ -138,6 +143,9 @@ if [ "$con" = "wii" ]; then
 		target="${target}_${wii_bl}"
 	fi
 fi
+if [ "$standalone" = "true" ]; then
+	target="${target}_standalone"
+fi
 echo "defconfig target: $target"
 echo "base dir: $BASE"
 
@@ -162,21 +170,23 @@ fi
 
 
 # rebuild the internal initramfs
-dest="$BASE/loader-img-src"
-"$BASE/build-stack/build-loader.sh" || fatal "failed to build loader"
+if [ "$standalone" != "true" ]; then
+	dest="$BASE/loader-img-src"
+	"$BASE/build-stack/build-loader.sh" || fatal "failed to build loader"
 
-cd "$dest"
-find . -print0 | cpio --null --create --verbose --format=newc > "$BASE/initrd.cpio"
+	cd "$dest"
+	find . -print0 | cpio --null --create --verbose --format=newc > "$BASE/initrd.cpio"
 
-cd "$BASE" || fatal "can't cd back?  wtf?"
-if [ "$compression" = "lz4" ]; then
-	# legacy compression, force overwrite if exists, delete source file
-	lz4 -lf --rm initrd.cpio initrd.cpio.lz4
-elif [ "$compression" = "gzip" ]; then
-	gzip -9nf initrd.cpio
-elif [ "$compression" = "none" ]; then
-	# do nothing
-	:
+	cd "$BASE" || fatal "can't cd back?  wtf?"
+	if [ "$compression" = "lz4" ]; then
+		# legacy compression, force overwrite if exists, delete source file
+		lz4 -lf --rm initrd.cpio initrd.cpio.lz4
+	elif [ "$compression" = "gzip" ]; then
+		gzip -9nf initrd.cpio
+	elif [ "$compression" = "none" ]; then
+		# do nothing
+		:
+	fi
 fi
 
 # build the kernel and modules
