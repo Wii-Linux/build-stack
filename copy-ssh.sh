@@ -60,10 +60,8 @@ if [ -d build-stack ]; then cd build-stack
 elif [ -d ../build-stack ]; then cd ../build-stack
 else fatal "can't find build-stack"; fi
 
-if ! [ -d "../$4" ]; then fatal "kernel directory doesn't exist"; fi
-cd "../$4"
-scp arch/powerpc/boot/zImage "$1:$2/wiilinux/$3.krn" || fatal "failed to copy kernel"
-cd ../
+if ! [ -f "../$4/arch/powerpc/boot/zImage" ]; then fatal "kernel image (or directory) doesn't exist"; fi
+scp "../$4/arch/powerpc/boot/zImage" "$1:$2/wiilinux/$3.krn" || fatal "failed to copy kernel"
 
 ssh "$1" umount "$2"
 echo "Successfully copied to $1 at $2"
