@@ -194,4 +194,4 @@ tar czf "./modules.tar.gz" --numeric-owner --owner=0 -C "$tmp" .
 rm -rf "$tmp"
 
 
-echo "Kernel built!  Don't forget to rebuild the loader too!"
+echo "Kernel built!"
