@@ -163,7 +163,7 @@ fi
 
 # rebuild the internal initramfs
 dest="$BASE/loader-img-src"
-"$BASE/build-stack/build-loader.sh"
+"$BASE/build-stack/build-loader.sh" || fatal "failed to build loader"
 
 cd "$dest"
 find . -print0 | cpio --null --create --verbose --format=newc > "$BASE/initrd.cpio"
