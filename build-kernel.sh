@@ -25,7 +25,7 @@ Options:
                                 source your own before running the script if
                                 you plan to use this!
 
-       --dry-run:               Do not actually build.  Just calculate tartget
+       --dry-run:               Do not actually build.  Just calculate target
                                 and perform some sanity checks.
 
   Compression Options:
