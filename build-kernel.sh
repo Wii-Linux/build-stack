@@ -13,6 +13,9 @@ Options:
 
        -s,--standalone:         Builds a standalone (non-boot-menu-based) kernel.
 
+       -i,--installer:          Build a kernel with an installer loader,
+                                rather than the boot menu loader.
+
        --android:               Builds a kernel for the specific console
                                 and bootloader, targetting Android
                                 (if supported).
@@ -58,6 +61,7 @@ I highly recommend creating a dedicated Wii Linux folder, and cloning at least:
 
 and generating these ahead of time:
 - loader-img-src
+- installer-src
 
 All of these must be present in the parent directory of your kernel source.
 
@@ -81,7 +85,7 @@ fi
 # default to building for Wii, MINI bootloader, lz4 compression of initrd
 con="wii"
 wii_bl="mini"
-standalone=false
+ldr_type="bootmenu"
 compression="lz4"
 make_args="-j$(nproc)"
 is_android=false
@@ -115,7 +119,11 @@ for arg in "$@"; do
 		--dry-run)
 			dry_run=true ;;
 		-s|--standalone)
-			standalone=true ;;
+			checkValid "$tmp_got_ldr" true "2 loader types"
+			ldr_type="none"; tmp_got_ldr=true ;;
+		-i|--installer)
+			checkValid "$tmp_got_ldr" true "2 loader types"
+			ldr_type="installer"; tmp_got_ldr=true ;;
 		-j1) make_args="-j1" ;;
 		--no-source-env) no_source_env=true ;;
 		-h|--help) usage; exit 0 ;; # show help
@@ -147,6 +155,7 @@ if [ "$standalone" = "true" ]; then
 	target="${target}_standalone"
 fi
 echo "defconfig target: $target"
+echo "loader type: $ldr_type"
 echo "base dir: $BASE"
 
 # don't bother cding to it if we're already there
@@ -170,7 +179,7 @@ fi
 
 
 # rebuild the internal initramfs
-if [ "$standalone" != "true" ]; then
+if [ "$ldr_type" = "bootmenu" ]; then
 	dest="$BASE/loader-img-src"
 	"$BASE/build-stack/build-loader.sh" || fatal "failed to build loader"
 
@@ -178,6 +187,17 @@ if [ "$standalone" != "true" ]; then
 	find . -print0 | cpio --null --create --verbose --format=newc > "$BASE/initrd.cpio"
 
 	cd "$BASE" || fatal "can't cd back?  wtf?"
+elif [ "$ldr_type" = "installer" ]; then
+	dest="$BASE/installer-src"
+	"$BASE/build-stack/build-installer.sh" || fatal "failed to build loader"
+
+	cd "$dest"
+	find . -print0 | cpio --null --create --verbose --format=newc > "$BASE/initrd.cpio"
+
+	cd "$BASE" || fatal "can't cd back?  wtf?"
+fi
+
+if [ "$ldr_type" != "none" ]; then
 	if [ "$compression" = "lz4" ]; then
 		# legacy compression, force overwrite if exists, delete source file
 		lz4 -lf --rm initrd.cpio initrd.cpio.lz4
