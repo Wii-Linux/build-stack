@@ -18,6 +18,8 @@ fi
 mkdir -p sdk
 cp output/images/powerpc-buildroot-linux-uclibc_sdk-buildroot.tar.gz sdk/wii-linux.tar.gz
 
+rm -rf ../dummy-sysroot-src || true
+mkdir ../dummy-sysroot-src
 cp -r output/host ../dummy-sysroot-src
 
 

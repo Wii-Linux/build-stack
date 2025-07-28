@@ -16,6 +16,7 @@ if ! [ -f output/images/rootfs.tar ]; then
 fi
 
 cd ..
+rm -rf loader-img-src || true
 mkdir loader-img-src
 cd loader-img-src
 if ! tar -p --xattrs -xf ../buildroot/output/images/rootfs.tar; then
