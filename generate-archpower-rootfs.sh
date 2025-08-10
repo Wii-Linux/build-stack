@@ -79,7 +79,7 @@ cd "$BASE"
 rm -rf "$OUT"
 mkdir -p "$OUT"
 
-pacstrap -KMC build-stack/conf/wiilinux-pacman.conf "$OUT" base archpower-keyring wii-linux-kernel-stable wii-linux-loader-stable wii-linux-meta gumboot-utils baedit networkmanager vim nano less wget openssh
+pacstrap -KMC build-stack/conf/wiilinux-pacman.conf "$OUT" base archpower-keyring wii-linux-kernel-stable wii-linux-meta gumboot-utils baedit networkmanager vim nano less wget openssh
 
 # pacstrap doesn't maintain our custom pacman.conf
 cp build-stack/conf/wiilinux-pacman.conf "$OUT/etc/pacman.conf"
