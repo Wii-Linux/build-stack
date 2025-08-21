@@ -219,9 +219,64 @@ fi
 tmp="$(mktemp -d wii_linux_kernel_build_XXXXXXXXXX --tmpdir=/tmp)"
 if [ "$tmp" = "" ]; then fatal "mktemp didn't give valid output"; fi
 mkdir -p "$tmp/usr/lib/modules"
-make INSTALL_MOD_PATH="$tmp/usr" modules_install
-tar czf "./modules.tar.gz" --numeric-owner --owner=0 -C "$tmp" .
-rm -rf "$tmp"
 
+# install the modules
+make INSTALL_MOD_PATH="$tmp/usr" modules_install
+
+# clean up residual header bits
+hdrInstDir=$(echo $tmp/usr/lib/modules/*/build)
+rm -rf $hdrInstDir
+
+# package the modules
+tar czf "./modules.tar.gz" --numeric-owner --owner=0 -C "$tmp" .
+
+# copy headers
+mkdir "$hdrInstDir"
+cp -r include "$hdrInstDir/"
+
+# copy build files
+buildFiles=$(find . -name 'Kconfig*' -o -name 'Kbuild*' -o -name 'Makefile*' | sed 's/\.\///g')
+for f in $buildFiles; do
+	mkdir -p "$hdrInstDir/$(dirname $f)"
+	cp "$f" "$hdrInstDir/$(dirname $f)/"
+done
+
+# copy arch/powerpc/include
+mkdir -p "$hdrInstDir/arch/powerpc"
+cp -r arch/powerpc/include "$hdrInstDir/arch/powerpc/"
+
+# clean up scripts, these contain host binaries
+git clean -xdf scripts
+
+# copy the now-cleaned scripts
+cp -r scripts "$hdrInstDir/"
+
+# copy tools
+cp -r tools "$hdrInstDir/"
+
+# we need a few important files if we want to do this
+mkdir -p "$hdrInstDir/arch/powerpc/kernel" "$hdrInstDir/arch/powerpc/lib" "$hdrInstDir/arch/x86/entry/syscalls"
+cp kernel/bounds.c "$hdrInstDir/kernel/"
+cp arch/powerpc/kernel/asm-offsets.c "$hdrInstDir/arch/powerpc/kernel/"
+cp kernel/time/timeconst.bc "$hdrInstDir/kernel/time/"
+cp arch/powerpc/lib/{,.}crtsavres* "$hdrInstDir/arch/powerpc/lib/"
+
+# yes, this is really needed, for checksyscalls.sh
+cp arch/x86/entry/syscalls/syscall_32.tbl "$hdrInstDir/arch/x86/entry/syscalls/"
+
+# copy important build related files
+for f in .config Module.symvers System.map; do
+	cp $f "$hdrInstDir/"
+done
+
+# these can fail, they may not exist
+for f in localversion*; do
+	cp $f "$hdrInstDir/" 2>/dev/null || true
+done
+
+# package the headers
+tar czf "./headers.tar.gz" --numeric-owner --owner=0 -C "$hdrInstDir" .
+
+rm -rf "$tmp"
 
 echo "Kernel built!"
