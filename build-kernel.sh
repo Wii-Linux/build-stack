@@ -65,9 +65,9 @@ and generating these ahead of time:
 
 All of these must be present in the parent directory of your kernel source.
 
-Example: build-kernel.sh kernel-4.5 4.5.0-wii+
-This would build the kernel in the directory 'kernel-4.5', which will output
-modules to modules.tar.gz
+Example: build-kernel.sh kernel-4.19
+This would build the kernel in the directory 'kernel-4.19', which will output
+modules to modules.tar.gz, and headers to headers.tar.gz
 
 Report any bugs to the GitHub issues page.
 EOF
