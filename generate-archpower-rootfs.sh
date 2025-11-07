@@ -136,7 +136,7 @@ EOF
 
 
 loop="$(losetup --show -Pf "$OUT-full-sd.img")"
-mkfs.ext4 -O '^verity' -O '^metadata_csum_seed' -L 'arch' "${loop}p2"
+mkfs.ext4 -O '^encrypt' -O '^verity' -O '^metadata_csum_seed' -L 'arch' "${loop}p2"
 mkfs.vfat -F32 "${loop}p1"
 
 mount "${loop}p2" "$OUT-mnt" --mkdir
