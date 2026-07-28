@@ -6,3 +6,4 @@ fi
 ./versioned_deploy.sh ../kernel/arch/powerpc/boot/zImage kernels "wii_linux_kernel_$1-{timestamp}.elf"
 ./versioned_deploy.sh ../kernel/modules.tar.gz modules "wii_linux_modules_$1-{timestamp}.tar.gz"
 ./versioned_deploy.sh ../kernel/headers.tar.gz headers "wii_linux_headers_$1-{timestamp}.tar.gz"
+./versioned_deploy.sh ../kernel/arch/powerpc/boot/dts/wii.dtb dtbs "wii_linux_dtb_$1-{timestamp}.dtb"
