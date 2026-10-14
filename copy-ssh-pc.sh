@@ -4,18 +4,19 @@
 
 usage() {
 	cat << EOF
-Usage: copy-ssh.sh [host] [dest] [short ver] [kernel src] <options>
+Usage: copy-ssh-pc.sh [host] [dest] [short ver] [kernel src] <options>
 
 Options:
 	None
 
-Copies the already-built kernel to a remote host.
+Copies the already-built kernel to a remote host with the FAT partition of
+your SD Card mounted.
 Assumes that you've already ran build-kernel.sh to build the kernel.
 Also assumes that you are using SSH keys, since a few of the commands
 won't be able to take stdin to ask for your password.
 This script heavily assumes a specific file structure is already set up.
 
-I highly recommend creating a dedicated Wii Linux folder, and cloning at least:
+I highly recommend creating a dedicated Wii-Linux folder, and cloning at least:
 - build-stack
 - boot-stack
 - kernel of your choice
@@ -30,7 +31,7 @@ Examples:
 MINI kernel version 4.4.302-cip80, residing in 'kernel-4.4-cip80', copy to
 techflash@172.16.4.10, and on that machine, the directory /mnt/sd is where
 you want to place the files.
-copy-ssh.sh techflash@172.16.4.10 /mnt/sd v4_4_302 kernel-4.4-cip80
+copy-ssh-pc.sh techflash@172.16.4.10 /mnt/sd v4_4_302 kernel-4.4-cip80
 
 
 Report any bugs to the GitHub issues page.
